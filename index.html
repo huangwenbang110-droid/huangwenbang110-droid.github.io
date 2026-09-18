@@ -36,6 +36,7 @@
   .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
 
   @keyframes blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+  @keyframes grow { from { width: 0; } to { width: var(--w, 100%); } }
 
   /* nav */
   nav {
@@ -132,14 +133,27 @@
   .term-spacer { width: 42px; }
 
   .term-body {
-    padding: 8px 0 4px;
+    padding: 4px 0 6px;
     background:
       radial-gradient(620px 130px at 18% 0%, rgba(124,92,255,0.075), transparent 70%),
       var(--surface);
   }
 
-  /* tree */
-  .node { position: relative; padding: 16px 26px; transition: background .2s; }
+  /* 时间轴 —— 与 .track 同一条基准线（左右各 26px） */
+  .axis { position: relative; height: 30px; margin: 12px 26px 6px; border-bottom: 1px solid var(--border); }
+  .axis .tick {
+    position: absolute; top: 0; transform: translateX(-50%);
+    font-family: var(--mono); font-size: 11px; color: var(--text-3); letter-spacing: 0.04em;
+  }
+  .axis .tick::after {
+    content: ""; position: absolute; left: 50%; top: 17px; width: 1px; height: 7px;
+    background: var(--border-bright);
+  }
+  .axis .tick-end { transform: none; }
+  .axis .tick-end::after { left: auto; right: 0; }
+
+  /* 树 —— 每一行是一条 span，右侧是它的 耗时 bar */
+  .node { position: relative; padding: 16px 26px 18px; transition: background .2s; }
   .node:hover { background: rgba(255,255,255,0.018); }
   .node-head { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; flex-wrap: wrap; }
   .path {
@@ -150,6 +164,11 @@
   }
   .node:hover .path { background: rgba(124,92,255,0.18); border-color: rgba(124,92,255,0.45); box-shadow: 0 0 14px -2px rgba(124,92,255,0.5); }
   .meta { font-family: var(--mono); font-size: 11px; color: var(--text-3); letter-spacing: 0.08em; }
+  .range {
+    font-family: var(--mono); font-size: 11.5px; color: var(--text-2);
+    border: 1px solid var(--border); background: var(--bg);
+    padding: 2px 8px; border-radius: 5px;
+  }
   .node-title { font-size: 17px; font-weight: 500; letter-spacing: -0.012em; margin-bottom: 6px; }
   .node-desc { font-size: 14.5px; color: var(--text-2); max-width: 700px; }
   .node-desc code {
@@ -157,6 +176,25 @@
     background: var(--bg); border: 1px solid var(--border);
     padding: 1px 6px; border-radius: 4px;
   }
+
+  /* 耗时 bar：所有行共用同一条 2019→今天 的基准，所以能横着比。
+     嵌进 children 的行会被缩进，这里用 --d 把它拉回同一条基准线。 */
+  .track {
+    position: relative; height: 6px; border-radius: 3px; margin-top: 14px;
+    margin-left: calc(var(--d, 0) * -56px);
+    width: calc(100% + var(--d, 0) * 82px);
+    background-color: rgba(255,255,255,0.035);
+    background-image: repeating-linear-gradient(to right,
+      rgba(255,255,255,0.07) 0 1px, transparent 1px 25.806%);
+  }
+  .bar {
+    position: absolute; top: 0; bottom: 0; border-radius: 3px;
+    left: var(--off, 0%); width: var(--w, 0%);
+    background: linear-gradient(90deg, #7c5cff 0%, #8b5cf6 45%, #22d3ee 100%);
+    box-shadow: 0 0 12px -2px rgba(124,92,255,0.65);
+  }
+  .bar.root { opacity: .32; box-shadow: none; }
+  .node.in .bar { animation: grow .9s cubic-bezier(.16,1,.3,1) both; }
 
   .children { margin-top: 16px; padding-left: 30px; border-left: 1px solid var(--border-bright); }
   .children > .node { padding-left: 26px; }
@@ -166,8 +204,22 @@
   }
   .children > .node:first-child { padding-top: 10px; }
   .children > .node:first-child::before { top: 20px; }
-  .children > .node:last-child { padding-bottom: 4px; }
-  @media (max-width: 640px) { .children { padding-left: 18px; } .children > .node { padding-left: 16px; } .children > .node::before { left: -18px; width: 12px; } }
+
+  /* 注解行：不是一段时间，是上面那个阶段的特征 —— 不给 bar */
+  .node.note { padding-top: 4px; padding-bottom: 14px; }
+  .node.note .path { background: transparent; border-color: var(--border); color: var(--text-3); }
+  .node.note .node-title { font-size: 14px; font-weight: 500; color: var(--text-2); }
+  .node.note .node-desc { font-size: 13.5px; color: var(--text-3); max-width: 660px; }
+  .node.note .node-desc code { font-size: 12.5px; color: var(--text-2); }
+  .node.note + .node, .node.note:last-child { padding-bottom: 26px; }
+
+  @media (max-width: 640px) {
+    .axis { display: none; }
+    .track { margin-left: 0; width: 100%; }
+    .children { padding-left: 18px; }
+    .children > .node { padding-left: 16px; }
+    .children > .node::before { left: -18px; width: 12px; }
+  }
 
   .term-foot {
     display: flex; align-items: center; gap: 9px;
@@ -208,7 +260,10 @@
 
   .reveal { opacity: 0; transform: translateY(18px); transition: opacity .7s cubic-bezier(.16,1,.3,1), transform .7s cubic-bezier(.16,1,.3,1); }
   .reveal.in { opacity: 1; transform: none; }
-  @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } .caret, .cursor { animation: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; transition: none; }
+    .caret, .cursor, .node.in .bar { animation: none; }
+  }
 </style>
 </head>
 <body>
@@ -230,8 +285,8 @@
     <div class="chip"><span>·</span> 2019 — 至今 · 四代演进</div>
     <h1>从自研 SDK 到<br><span class="grad">AI 可观测</span><span class="caret"></span></h1>
     <p class="lede">
-      七年间完整走过可观测体系的四代演进：自研 SDK、Agent 架构、OpenTelemetry 统一、AIOps 与 AI 可观测。
-      在数百应用、数千业务单元、数万节点的规模上做过完整落地。
+      七年间完整走过可观测体系的四代演进，在数百应用、数千业务单元、数万节点的规模上做过完整落地。
+      每一代都不是平滑升级，中间有代价和取舍。
     </p>
     <div class="actions">
       <a class="btn primary" href="#writing">看文章</a>
@@ -251,10 +306,10 @@
     <div class="sec-head reveal">
       <div class="sec-label">tree -L 3 ./observability</div>
       <h2>演进线</h2>
-      <p class="sec-sub">每一代都不是平滑升级，中间有代价和取舍。文章里写的正是这些。</p>
+      <p class="sec-sub">按调用链的读法看：每一行是一个阶段，右边是它的跨度。四年那一格，是全套里最长的一段。</p>
     </div>
 
-    <div class="term reveal">
+    <div class="term">
       <div class="term-bar">
         <span class="dots"><i></i><i></i><i></i></span>
         <span class="term-title">~/observability/trace</span>
@@ -262,45 +317,84 @@
       </div>
       <div class="term-body">
 
-        <div class="node">
-          <div class="node-head"><code class="path">0</code><span class="meta">第一代 · 自研 SDK</span></div>
-          <div class="node-title">Octopus · 监控平台</div>
-          <div class="node-desc">自研采集 SDK 与平台应用层，覆盖日志与指标。底层用开源组件，上层自研。当时没有调用链——不是放弃，是没进视野。</div>
+        <div class="axis">
+          <span class="tick" style="left:0%">2019</span>
+          <span class="tick" style="left:25.81%">2021</span>
+          <span class="tick" style="left:51.61%">2023</span>
+          <span class="tick" style="left:77.42%">2025</span>
+          <span class="tick tick-end" style="right:0">现在</span>
+        </div>
+
+        <div class="node reveal" style="--d:0">
+          <div class="node-head">
+            <code class="path">0</code>
+            <span class="meta">全程</span>
+            <span class="range">2019 – 至今</span>
+          </div>
+          <div class="node-title">可观测平台演进</div>
+          <div class="node-desc">从自研采集 SDK 到 AI 可观测。下面每一代都是重做，不是平滑升级。</div>
+          <div class="track"><span class="bar root" style="--off:0%;--w:100%"></span></div>
 
           <div class="children">
 
-            <div class="node">
-              <div class="node-head"><code class="path">0.0</code><span class="meta">第二代 · APM</span></div>
+            <div class="node reveal" style="--d:1">
+              <div class="node-head">
+                <code class="path">0.0</code>
+                <span class="meta">第一代 · 自研 SDK</span>
+                <span class="range">2019 – 2020</span>
+              </div>
+              <div class="node-title">Octopus · 监控平台</div>
+              <div class="node-desc">自研采集 SDK 与平台应用层，覆盖日志与指标。底层用开源组件，上层自研。当时没有调用链——不是放弃，是根本没进需求。</div>
+              <div class="track"><span class="bar" style="--off:0%;--w:12.90%"></span></div>
+            </div>
+
+            <div class="node reveal" style="--d:1">
+              <div class="node-head">
+                <code class="path">0.1</code>
+                <span class="meta">第二代 · APM</span>
+                <span class="range">2020 – 2022</span>
+              </div>
               <div class="node-title">应用性能监控</div>
               <div class="node-desc">业务方开始问"这个请求慢在哪一步"，日志和指标答不上来。第一次认真做技术评估，引入调用链。</div>
+              <div class="track"><span class="bar" style="--off:12.90%;--w:25.81%"></span></div>
 
               <div class="children">
-                <div class="node">
-                  <div class="node-head"><code class="path">0.0.0</code><span class="meta">调用链定位方式</span></div>
-                  <div class="node-title">路径式编号，不是父子嵌套</div>
-                  <div class="node-desc">自研探针的调用链是树形，用 <code>0</code> / <code>0.0</code> / <code>0.0.0</code> / <code>0.0.1</code> 这类路径编号标识节点在链路中的位置：同级往后顺延，下钻继续往后接。<br>好处是任意节点能直接靠编号定位自己在链路里的坐标，不依赖上游传递的 parentSpanId。</div>
+                <div class="node note reveal" style="--d:2">
+                  <div class="node-head"><code class="path">0.1.0</code><span class="meta">调用链定位方式</span></div>
+                  <div class="node-title">自研调用链：路径式编号定位</div>
+                  <div class="node-desc">用 <code>0</code> / <code>0.0</code> / <code>0.0.0</code> / <code>0.0.1</code> 标识节点在链路中的位置：同级往后顺延，下钻继续往后接。任意节点靠编号直接定位坐标，不依赖上游传下来的 parentSpanId。</div>
                 </div>
               </div>
             </div>
 
-            <div class="node">
-              <div class="node-head"><code class="path">0.1</code><span class="meta">第三代 · 云原生</span></div>
+            <div class="node reveal" style="--d:1">
+              <div class="node-head">
+                <code class="path">0.2</code>
+                <span class="meta">第三代 · 云原生</span>
+                <span class="range">2022 – 2026</span>
+              </div>
               <div class="node-title">云原生应用可观测</div>
-              <div class="node-desc">指标、日志、调用链三信号统一，容器化与 Kubernetes 环境适配，平台规模上量。</div>
+              <div class="node-desc">指标、日志、调用链三信号统一；探针从 SDK 走向 Agent；容器化与 Kubernetes 环境适配；平台规模上量。</div>
+              <div class="track"><span class="bar" style="--off:38.71%;--w:51.61%"></span></div>
 
               <div class="children">
-                <div class="node">
-                  <div class="node-head"><code class="path">0.1.0</code><span class="meta">协议与语义迁移</span></div>
-                  <div class="node-title">OpenTelemetry 统一</div>
-                  <div class="node-desc">存量兼容、协议转换、团队认知重建。从路径式编号迁到标准父子结构，是这一代最值得记录的代价。</div>
+                <div class="node note reveal" style="--d:2">
+                  <div class="node-head"><code class="path">0.2.0</code><span class="meta">协议兼容方式</span></div>
+                  <div class="node-title">OpenTelemetry：不是切换，是双协议并行</div>
+                  <div class="node-desc">路径式编号和 OTel 标准父子结构<strong>两套都兼容，双发协议</strong>。存量探针不用改，新接入直接走标准；代价是要同时维护两条语义映射。</div>
                 </div>
               </div>
             </div>
 
-            <div class="node">
-              <div class="node-head"><code class="path">0.2</code><span class="meta">第四代 · AI</span></div>
+            <div class="node reveal" style="--d:1">
+              <div class="node-head">
+                <code class="path">0.3</code>
+                <span class="meta">第四代 · AI</span>
+                <span class="range">2026 – 至今</span>
+              </div>
               <div class="node-title">AIOps 与 AI 可观测</div>
-              <div class="node-desc">大模型做告警根因分析，只读 MCP 工具边界设计；AI 应用的 Token 成本治理与内容脱敏。</div>
+              <div class="node-desc">大模型做告警根因分析，40+ 只读 MCP 工具的边界设计；AI 应用的 Token 成本治理与内容脱敏。</div>
+              <div class="track"><span class="bar" style="--off:90.32%;--w:9.68%"></span></div>
             </div>
 
           </div>
@@ -340,8 +434,8 @@
       </div>
       <a class="card reveal" href="https://github.com/huangwenbang110-droid/articles" target="_blank" rel="noopener">
         <div class="k">04</div>
-        <h3>迁移到 OpenTelemetry：一份代价清单</h3>
-        <p>存量兼容、协议转换、团队认知。几乎没人愿意公开写迁移代价。</p>
+        <h3>双协议并行：接入 OpenTelemetry 的代价清单</h3>
+        <p>我们没有切换，而是两套协议同时跑、同时发。存量兼容、语义映射、团队认知。</p>
         <span class="status wip">写作中</span>
       </a>
       <div class="card reveal">
