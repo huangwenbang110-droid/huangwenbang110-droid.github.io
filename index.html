@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-page-node-id="cPzfOHC8pyKYqIXGTL2N17">
-<head data-page-node-id="kFItvxXBlzqhpaM2AMri2B">
-<meta charset="UTF-8" data-page-node-id="ohpSqtN6xmqvINeO9EeUw4">
-<meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="3FSvQNjWxxwSl1kfhOhhAk">
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>云原生可观测 · 从自研 SDK 到 AI 可观测</title>
-<meta name="description" content="七年走过可观测体系四代演进：自研 SDK、Agent 架构、OpenTelemetry 接入、AIOps 与 AI 可观测。" data-page-node-id="odTaamf2FFDb51zAjbAcdF">
+<meta name="description" content="七年走过可观测体系四代演进：自研 SDK、Agent 架构、OpenTelemetry 接入、AIOps 与 AI 可观测。">
 <style>
   :root {
     --bg: #08090a;
@@ -266,238 +266,238 @@
   }
 </style>
 </head>
-<body data-page-node-id="520H6moxiO7X7pt6gEvbGD">
+<body>
 
-<nav data-page-node-id="17l1U7dQOq5mN6WBAaao3P">
-  <div class="wrap nav-inner" data-page-node-id="WbeXeqkvsVZB7OSuQ3uk8n">
-    <div class="brand" data-page-node-id="iavGcU0nWEAC9cyYvHu2FM"><span class="dot" data-page-node-id="uACB8TZS7r6cBAgFZZU5Yg"></span>云原生可观测 <span class="brand-path" data-page-node-id="tLccoWIjOFZd4pICmzls1Z">~/observability</span></div>
-    <div class="nav-links" data-page-node-id="ljCjcb94pLaoasK7W2TfkB">
-      <a href="#evolution" data-page-node-id="wV6kDpELR9GtsvHhDaLpt7">演进线</a>
-      <a href="#writing" data-page-node-id="3NEsNdHoRyWD2SqM7DOvCK">文章</a>
-      <a href="#projects" data-page-node-id="eWlANP8EFo83FZmV9R59CM">开源</a>
-      <a href="https://github.com/huangwenbang110-droid" target="_blank" rel="noopener" data-page-node-id="ucBHJuxCJYtSeWSlJvoQnb">GitHub</a>
+<nav>
+  <div class="wrap nav-inner">
+    <div class="brand"><span class="dot"></span>云原生可观测 <span class="brand-path">~/observability</span></div>
+    <div class="nav-links">
+      <a href="#evolution">演进线</a>
+      <a href="#writing">文章</a>
+      <a href="#projects">开源</a>
+      <a href="https://github.com/huangwenbang110-droid" target="_blank" rel="noopener">GitHub</a>
     </div>
   </div>
 </nav>
 
-<header data-page-node-id="8WZdnXf3Yy4hYk7EIzbsI1">
-  <div class="wrap" data-page-node-id="XxJrxR07nU5dUxortMpKB4">
-    <div class="chip" data-page-node-id="ySC3kzGJUYQLOzDIim8un7"><span data-page-node-id="NVHixVCxfNp7OtNv3RXUe9">·</span> 2019 — 至今 · 四代演进</div>
-    <h1 data-page-node-id="HECbzBMRv3TkKzNh5KwCrC">从自研 SDK 到<br data-page-node-id="4UCu2UvB8Lhb9JQZ0RUSps"><span class="grad" data-page-node-id="DQRWrOSVmNxcXfgfcBGfnD">AI 可观测</span><span class="caret" data-page-node-id="SCpK1NQvagshfq5X7h87a8"></span></h1>
-    <p class="lede" data-page-node-id="L3kLqSCqFzfJWD2Rv06MRN">
+<header>
+  <div class="wrap">
+    <div class="chip"><span>·</span> 2019 — 至今 · 四代演进</div>
+    <h1>从自研 SDK 到<br><span class="grad">AI 可观测</span><span class="caret"></span></h1>
+    <p class="lede">
       2019 年开始做可观测平台，到现在换了四代。
       起点是自研采集 SDK，现在是 AI 可观测。
     </p>
-    <div class="actions" data-page-node-id="n4gIL5nXGkZ0ImJcNfzLAp">
-      <a class="btn primary" href="#writing" data-page-node-id="EBGjyHCLUrk0BVM7LBYPHX">看文章</a>
-      <a class="btn" href="https://github.com/huangwenbang110-droid/articles" target="_blank" rel="noopener" data-page-node-id="FGMPJyx0L4tLpKeBu51NY9">文章仓库 ↗</a>
+    <div class="actions">
+      <a class="btn primary" href="#writing">看文章</a>
+      <a class="btn" href="https://github.com/huangwenbang110-droid/articles" target="_blank" rel="noopener">文章仓库 ↗</a>
     </div>
 
-    <div class="metrics reveal" data-page-node-id="draamiSNACGFT91jL2AI2T">
-      <div class="metric" data-page-node-id="j7PltaxIcDw18YBymNDajv"><div class="n" data-page-node-id="3MlYNYIoyIz13LDjj7hbTZ">4 代</div><div class="l" data-page-node-id="icU21ZZCqFNYZyxlow0DFE">可观测体系演进</div></div>
-      <div class="metric" data-page-node-id="LPfBeAvtSkhfIOibYu65Eb"><div class="n" data-page-node-id="lacifJuIUlZlEN6PvRjRAa">数万节点</div><div class="l" data-page-node-id="9h5UKQOXCQu4b2Pnl3YLxs">平台覆盖规模</div></div>
-      <div class="metric" data-page-node-id="LkYh6Jg9qYTQADcpOhBfC0"><div class="n" data-page-node-id="SXcMr64T1FLRo4uUM2HCgw">数十 TB</div><div class="l" data-page-node-id="EMm7LybhekYOEXUvJPH6oh">日均数据处理量</div></div>
+    <div class="metrics reveal">
+      <div class="metric"><div class="n">4 代</div><div class="l">可观测体系演进</div></div>
+      <div class="metric"><div class="n">数万节点</div><div class="l">平台覆盖规模</div></div>
+      <div class="metric"><div class="n">数十 TB</div><div class="l">日均数据处理量</div></div>
     </div>
   </div>
 </header>
 
-<section id="evolution" data-page-node-id="MWAPvDBt6viXQ0vePTbg2e">
-  <div class="wrap" data-page-node-id="5vdwVtB5Jprbzo1SwrzP7N">
-    <div class="sec-head reveal" data-page-node-id="Nb3klDQpmJBJJddmSlgBbY">
-      <div class="sec-label" data-page-node-id="4DZTTdqS4CQXqlLI8AuSMk">tree -L 3 ./observability</div>
-      <h2 data-page-node-id="6CLCQINSIchi47xKNS9SuM">演进线</h2>
-      <p class="sec-sub" data-page-node-id="cIE3EWvcyKODiQ6SMycjP0">按调用链的读法看：每一行是一个阶段，bar 的长度就是它的跨度。</p>
+<section id="evolution">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-label">tree -L 3 ./observability</div>
+      <h2>演进线</h2>
+      <p class="sec-sub">按调用链的读法看：每一行是一个阶段，bar 的长度就是它的跨度。</p>
     </div>
 
-    <div class="term" data-page-node-id="5HsGtaaNXMUsJv1XxYBi8r">
-      <div class="term-bar" data-page-node-id="AJEJC3yuEpdhKPgnIj7IWm">
-        <span class="dots" data-page-node-id="PWoUbcWC7xoqeLIhCbt3bu"><i data-page-node-id="wyZxHgY8Zc6AdfOiIyuhrd"></i><i data-page-node-id="1Q6JIcFFuLGdXGt1iTAEVs"></i><i data-page-node-id="kTuYgE5eqlcW7C8e0ot11u"></i></span>
-        <span class="term-title" data-page-node-id="H1XZc60MiQzOunseLAIwZn">~/observability/trace</span>
-        <span class="term-spacer" data-page-node-id="HkwEs04IeRawoKtbrn4obe"></span>
+    <div class="term">
+      <div class="term-bar">
+        <span class="dots"><i></i><i></i><i></i></span>
+        <span class="term-title">~/observability/trace</span>
+        <span class="term-spacer"></span>
       </div>
-      <div class="term-body" data-page-node-id="UObcQCD0TVeXIECVasHmxn">
+      <div class="term-body">
 
-        <div class="axis" data-page-node-id="FLuYYbtQw1N1px44ATHZGR">
-          <span class="tick" style="left:0%" data-page-node-id="LbMDfcAZcoxLocVaIHQJg8">2019</span>
-          <span class="tick" style="left:25.81%" data-page-node-id="DbACKot21Z2THW1MRnRTRX">2021</span>
-          <span class="tick" style="left:51.61%" data-page-node-id="wsN5lLAiE43KmBAdZLOX63">2023</span>
-          <span class="tick" style="left:77.42%" data-page-node-id="gIY1uwLIFhDeg6GnVz7o9O">2025</span>
-          <span class="tick tick-end" style="right:0" data-page-node-id="alaf6JNCSIIf432ZYEnxWU">现在</span>
+        <div class="axis">
+          <span class="tick" style="left:0%">2019</span>
+          <span class="tick" style="left:25.81%">2021</span>
+          <span class="tick" style="left:51.61%">2023</span>
+          <span class="tick" style="left:77.42%">2025</span>
+          <span class="tick tick-end" style="right:0">现在</span>
         </div>
 
-        <div class="node reveal" style="--d:0" data-page-node-id="IuAzNWga4fdQBW8MuBcis3">
-          <div class="node-head" data-page-node-id="MoDfVh5s8Lw6m9wBPSZMDL">
-            <code class="path" data-page-node-id="VmMVSKZmsfBANc43JEXG4m">0</code>
-            <span class="meta" data-page-node-id="hAx3G6Gc1EvOTGDC35Nmku">全程</span>
-            <span class="range" data-page-node-id="3jSQ0vdqdGDhynEKEwyoo1">2019 – 至今</span>
+        <div class="node reveal" style="--d:0">
+          <div class="node-head">
+            <code class="path">0</code>
+            <span class="meta">全程</span>
+            <span class="range">2019 – 至今</span>
           </div>
-          <div class="node-title" data-page-node-id="PuWXI4m057zS9wYVVXDJn6">可观测平台演进</div>
-          <div class="node-desc" data-page-node-id="JzPl450Z07XVIyX2uZIDci">从自研采集 SDK 到 AI 可观测。</div>
-          <div class="track" data-page-node-id="2K5OqIg4pRCf6pyv8PDePt"><span class="bar root" style="--off:0%;--w:100%" data-page-node-id="IfoHJDVOD1L1DdU2BxNAp2"></span></div>
+          <div class="node-title">可观测平台演进</div>
+          <div class="node-desc">从自研采集 SDK 到 AI 可观测。</div>
+          <div class="track"><span class="bar root" style="--off:0%;--w:100%"></span></div>
 
-          <div class="children" data-page-node-id="xkeH4neYOunMGxFccinZjN">
+          <div class="children">
 
-            <div class="node reveal" style="--d:1" data-page-node-id="gN14NiNGacHB1xSyt71hoH">
-              <div class="node-head" data-page-node-id="yL9kH1AXqS8aVwIJNOczuM">
-                <code class="path" data-page-node-id="IwlaPzSPSQA1cWompDepdS">0.0</code>
-                <span class="meta" data-page-node-id="1mDe9Zvj61AFhoAER9as3x">第一代 · 自研 SDK</span>
-                <span class="range" data-page-node-id="kogZzMB7tkVxryNSHWJhie">2019 – 2020</span>
+            <div class="node reveal" style="--d:1">
+              <div class="node-head">
+                <code class="path">0.0</code>
+                <span class="meta">第一代 · 自研 SDK</span>
+                <span class="range">2019 – 2020</span>
               </div>
-              <div class="node-title" data-page-node-id="HGrK3SVPkW5HXHSYHzjuAE">Octopus · 监控平台</div>
-              <div class="node-desc" data-page-node-id="cd8CEyBOtBLPDnJh0rXqmB">自研采集 SDK 与平台应用层，覆盖日志与指标。底层用开源组件，上层自研。当时没有调用链——不是放弃，是根本没进需求。</div>
-              <div class="track" data-page-node-id="bQoVDK26lic2F13Yfx62gL"><span class="bar" style="--off:0%;--w:12.90%" data-page-node-id="EJSGLTk0eyTUXIwV5Ho17y"></span></div>
+              <div class="node-title">Octopus · 监控平台</div>
+              <div class="node-desc">自研采集 SDK 与平台应用层，覆盖日志与指标。底层用开源组件，上层自研。当时没有调用链——不是放弃，是根本没进需求。</div>
+              <div class="track"><span class="bar" style="--off:0%;--w:12.90%"></span></div>
             </div>
 
-            <div class="node reveal" style="--d:1" data-page-node-id="fiKg80fvVur1asgFyhxA9i">
-              <div class="node-head" data-page-node-id="brIgIeCPkDgP6F83iEjOo6">
-                <code class="path" data-page-node-id="DGCCw1C9pBuChg7HA7PjAT">0.1</code>
-                <span class="meta" data-page-node-id="auYqARTUesR4pXrYNaCnHs">第二代 · APM</span>
-                <span class="range" data-page-node-id="L175DEUanff7abehlZDn4H">2020 – 2022</span>
+            <div class="node reveal" style="--d:1">
+              <div class="node-head">
+                <code class="path">0.1</code>
+                <span class="meta">第二代 · APM</span>
+                <span class="range">2020 – 2022</span>
               </div>
-              <div class="node-title" data-page-node-id="vnJvSdHO4x2jOi2oKME8jY">应用性能监控</div>
-              <div class="node-desc" data-page-node-id="nGjEdyUeIy6DIFIR7EUp2k">业务方开始问"这个请求慢在哪一步"，日志和指标答不上来。第一次认真做技术评估，引入调用链。</div>
-              <div class="track" data-page-node-id="PArrNDKUIo0CgMsswlq74t"><span class="bar" style="--off:12.90%;--w:25.81%" data-page-node-id="t8CS4Abq6bbz9qsBYwRMka"></span></div>
+              <div class="node-title">应用性能监控</div>
+              <div class="node-desc">业务方开始问"这个请求慢在哪一步"，日志和指标答不上来。第一次认真做技术评估，引入调用链。</div>
+              <div class="track"><span class="bar" style="--off:12.90%;--w:25.81%"></span></div>
 
-              <div class="children" data-page-node-id="418KSPLHRbGVZOwbWQJST8">
-                <div class="node note reveal" style="--d:2" data-page-node-id="vDUEUyaT2UKvvjwMlUTU5t">
-                  <div class="node-head" data-page-node-id="ksYoyTlxOlZYSkBE6Jrojh"><code class="path" data-page-node-id="W9Wfb6dxYbUW6HReNr5F6B">0.1.0</code><span class="meta" data-page-node-id="cArTAHGOBZSW7DoPcjgJz7">调用链定位方式</span></div>
-                  <div class="node-title" data-page-node-id="13Sh7a7Sy4hzGdxbmzvVR0">自研调用链：路径式编号定位</div>
-                  <div class="node-desc" data-page-node-id="hHNNVSxkzoSFfqGjzPVFVj">用 <code data-page-node-id="8D3wVnnMAEee7HYv8yuGqK">0</code> / <code data-page-node-id="gOH2ftzS6YstZhlNmI3Bhf">0.0</code> / <code data-page-node-id="vf2K90HLKAQL04Cwjm5cr3">0.0.0</code> / <code data-page-node-id="kY9L7T4BFLXBALSeOSrGpC">0.0.1</code> 标识节点在链路中的位置：同级往后顺延，下钻继续往后接。任意节点靠编号直接定位坐标，不依赖上游传下来的 parentSpanId。</div>
+              <div class="children">
+                <div class="node note reveal" style="--d:2">
+                  <div class="node-head"><code class="path">0.1.0</code><span class="meta">调用链定位方式</span></div>
+                  <div class="node-title">自研调用链：路径式编号定位</div>
+                  <div class="node-desc">用 <code>0</code> / <code>0.0</code> / <code>0.0.0</code> / <code>0.0.1</code> 标识节点在链路中的位置：同级往后顺延，下钻继续往后接。任意节点靠编号直接定位坐标，不依赖上游传下来的 parentSpanId。</div>
                 </div>
               </div>
             </div>
 
-            <div class="node reveal" style="--d:1" data-page-node-id="Zvs6t3huR4WQ56zJ8P544Q">
-              <div class="node-head" data-page-node-id="yKQCur7LZjEUw6tJp76vC6">
-                <code class="path" data-page-node-id="VPemkBXpeQ7Y1JSkW2TgT9">0.2</code>
-                <span class="meta" data-page-node-id="h2XYUbriYLu3iZX7sJDOrH">第三代 · 云原生</span>
-                <span class="range" data-page-node-id="5cOp0fGgYfpA9U7hIdQwxB">2022 – 2026</span>
+            <div class="node reveal" style="--d:1">
+              <div class="node-head">
+                <code class="path">0.2</code>
+                <span class="meta">第三代 · 云原生</span>
+                <span class="range">2022 – 2026</span>
               </div>
-              <div class="node-title" data-page-node-id="oTMhMc83hhVlcFAAvCNpn7">云原生应用可观测</div>
-              <div class="node-desc" data-page-node-id="NxTo2vS9xmAdKlEIwn27OG">指标、日志、调用链三信号统一；探针从 SDK 走向 Agent；容器化与 Kubernetes 环境适配；平台规模上量。</div>
-              <div class="track" data-page-node-id="1dbmwE96oRvpR37FLWTIFf"><span class="bar" style="--off:38.71%;--w:51.61%" data-page-node-id="acojXAFe8ElUXpGtWZBM3d"></span></div>
+              <div class="node-title">云原生应用可观测</div>
+              <div class="node-desc">指标、日志、调用链三信号统一；探针从 SDK 走向 Agent；容器化与 Kubernetes 环境适配；平台规模上量。</div>
+              <div class="track"><span class="bar" style="--off:38.71%;--w:51.61%"></span></div>
 
-              <div class="children" data-page-node-id="RRkOOmVCOFwuSblzF9VCnI">
-                <div class="node note reveal" style="--d:2" data-page-node-id="pRvC1qmUgpGOSkFtDMjzMw">
-                  <div class="node-head" data-page-node-id="IAt7pfZ4Mq1ZLctAmEEQnA"><code class="path" data-page-node-id="H5FFwJpb0FjKg6Je3w4nxg">0.2.0</code><span class="meta" data-page-node-id="BSyKP7KiqmyN48F3DgJROV">协议兼容方式</span></div>
-                  <div class="node-title" data-page-node-id="V4RB4QveR8QFKFhZ0sgwh8">OpenTelemetry：拥抱开源协议</div>
-                  <div class="node-desc" data-page-node-id="iapiVDsnWH9O71cFRHtcJN">路径式编号和 OTel 标准父子结构<strong data-page-node-id="5NDz1XPcwM9gHgXFRy2Sqk">两套都兼容，双发协议</strong>。存量探针不用改，新接入直接走标准；代价是要同时维护两条语义映射。</div>
+              <div class="children">
+                <div class="node note reveal" style="--d:2">
+                  <div class="node-head"><code class="path">0.2.0</code><span class="meta">协议兼容方式</span></div>
+                  <div class="node-title">OpenTelemetry：拥抱开源协议</div>
+                  <div class="node-desc">路径式编号和 OTel 标准父子结构<strong>两套都兼容，双发协议</strong>。存量探针不用改，新接入直接走标准；代价是要同时维护两条语义映射。</div>
                 </div>
               </div>
             </div>
 
-            <div class="node reveal" style="--d:1" data-page-node-id="DfpRbjDMNVe7zVMD038A98">
-              <div class="node-head" data-page-node-id="SBQlgVjIK2MWYz5EHs0GEK">
-                <code class="path" data-page-node-id="58FvbdgNsZLVFb5161qZy3">0.3</code>
-                <span class="meta" data-page-node-id="9DY9cnzMP15u7uOHFWoNPL">第四代 · AI</span>
-                <span class="range" data-page-node-id="3izf7SHLxdsx8YIghkeDLr">2026 – 至今</span>
+            <div class="node reveal" style="--d:1">
+              <div class="node-head">
+                <code class="path">0.3</code>
+                <span class="meta">第四代 · AI</span>
+                <span class="range">2026 – 至今</span>
               </div>
-              <div class="node-title" data-page-node-id="JKoXVOk6kKTT58gYktTrdq">AIOps 与 AI 可观测</div>
-              <div class="node-desc" data-page-node-id="RT7SCtVApkBZOXmxbyQL9u">大模型做告警根因分析，40+ 只读 MCP 工具的边界设计；AI 应用的 Token 成本治理与内容脱敏。</div>
-              <div class="track" data-page-node-id="0OKDiaok52Ka2lDermam7d"><span class="bar" style="--off:90.32%;--w:9.68%" data-page-node-id="IHT6cIG1CSJhSubNhuS0ac"></span></div>
+              <div class="node-title">AIOps 与 AI 可观测</div>
+              <div class="node-desc">大模型做告警根因分析，40+ 只读 MCP 工具的边界设计；AI 应用的 Token 成本治理与内容脱敏。</div>
+              <div class="track"><span class="bar" style="--off:90.32%;--w:9.68%"></span></div>
             </div>
 
           </div>
         </div>
 
       </div>
-      <div class="term-foot" data-page-node-id="2xCOfi0Hw4upCdx0i9rlm1"><span class="ps" data-page-node-id="8Z76CLo0FLgbHqBk2UTVvv">$</span><span class="cursor" data-page-node-id="L0T3jOhYKsspmIJTnjfTc7"></span></div>
+      <div class="term-foot"><span class="ps">$</span><span class="cursor"></span></div>
     </div>
   </div>
 </section>
 
-<section id="writing" data-page-node-id="MHwaKYJ7kgkFEQVTlj4lKJ">
-  <div class="wrap" data-page-node-id="piJmcJjlOMPHIzeoskUM2W">
-    <div class="sec-head reveal" data-page-node-id="zA5xLSSfNFkq1SOHzrpBpK">
-      <div class="sec-label" data-page-node-id="oruHw9yPBg9tKsL8zPLB6P">ls -la ./writing</div>
-      <h2 data-page-node-id="gslLLzSkjINujL1iz20gIa">可观测演进笔记</h2>
-      <p class="sec-sub" data-page-node-id="0GSJg9u1jQnR1sWNuCoHeS">每一代写两层：怎么实现的（方案、选型、数据模型），以及后来为什么要换掉。</p>
+<section id="writing">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-label">ls -la ./writing</div>
+      <h2>可观测演进笔记</h2>
+      <p class="sec-sub">每一代写两层：怎么实现的（方案、选型、数据模型），以及后来为什么要换掉。</p>
     </div>
-    <div class="grid" data-page-node-id="O1iucFMwKrcHWoYcvS16HA">
-      <a class="card reveal" href="https://github.com/huangwenbang110-droid/articles/blob/main/01-第一代监控平台.md" target="_blank" rel="noopener" data-page-node-id="n0p5szNlTOVsuMvA9ivCLc">
-        <div class="k" data-page-node-id="YdxMM6sttVzigm2PC7y77l">01</div>
-        <h3 data-page-node-id="YKzFxFgCPLYn8u9Rokxpf4">平台、日志、指标</h3>
-        <p data-page-node-id="zYbsPqQFPnxTLVIKqExObs">第一代监控平台回顾。自研的边界、日志转指标的代价、以及那个不在场的调用链。</p>
-        <span class="status done" data-page-node-id="BGFwKijK2dA3DaoYTX2UQr">已发布</span>
+    <div class="grid">
+      <a class="card reveal" href="https://github.com/huangwenbang110-droid/articles/blob/main/01-第一代监控平台.md" target="_blank" rel="noopener">
+        <div class="k">01</div>
+        <h3>平台、日志、指标</h3>
+        <p>第一代监控平台回顾。自研的边界、日志转指标的代价、以及那个不在场的调用链。</p>
+        <span class="status done">已发布</span>
       </a>
-      <a class="card reveal" href="https://github.com/huangwenbang110-droid/articles" target="_blank" rel="noopener" data-page-node-id="2RWpKOr2laxz2oXP9ibVah">
-        <div class="k" data-page-node-id="qxrCWpB2daM8nGbxzXzRu6">02</div>
-        <h3 data-page-node-id="xy2UWS3JvXFuhBu6QCO8ye">从 SDK 到 Agent</h3>
-        <p data-page-node-id="pTeaBWHrpDVh3xNDku75aB">Agent 的挂载方式、字节码增强、配置下发；SDK 模式在规模化之后为什么撑不住。</p>
-        <span class="status wip" data-page-node-id="Nhv7sy3T1EcuzUTeDSnvlU">写作中</span>
+      <a class="card reveal" href="https://github.com/huangwenbang110-droid/articles" target="_blank" rel="noopener">
+        <div class="k">02</div>
+        <h3>从 SDK 到 Agent</h3>
+        <p>Agent 的挂载方式、字节码增强、配置下发；SDK 模式在规模化之后为什么撑不住。</p>
+        <span class="status wip">写作中</span>
       </a>
-      <div class="card reveal" data-page-node-id="qhvLsyefSrjyRwrGMwOY8y">
-        <div class="k" data-page-node-id="csLot19hUZCO9mzpfv68QZ">03</div>
-        <h3 data-page-node-id="rpDPB9yvz58obdALZhEuzK">Agent 架构落地</h3>
-        <p data-page-node-id="rL4qYcaypgTsNjMnrtZAWW">Java 与 Python 两套 Agent 的实现差异与取舍。</p>
-        <span class="status" data-page-node-id="wsBAW9FyNat60gRvRsMRx4">待写</span>
+      <div class="card reveal">
+        <div class="k">03</div>
+        <h3>Agent 架构落地</h3>
+        <p>Java 与 Python 两套 Agent 的实现差异与取舍。</p>
+        <span class="status">待写</span>
       </div>
-      <a class="card reveal" href="https://github.com/huangwenbang110-droid/articles" target="_blank" rel="noopener" data-page-node-id="FG3CFuMyI5hTbeyxnpzQ5r">
-        <div class="k" data-page-node-id="czGGfywaCObNNehAJmFUhr">04</div>
-        <h3 data-page-node-id="7zEBuiGTAZBD8qXCNbjXHe">拥抱开源协议，但不切换：接入 OpenTelemetry 的代价清单</h3>
-        <p data-page-node-id="G6jKLJQhmT1aA1ANDz2ciG">协议转换怎么做的，以及决定接入、决定不切换，各自的依据是什么。</p>
-        <span class="status wip" data-page-node-id="D3UB4Po5vSr43HwpP0p3zD">写作中</span>
+      <a class="card reveal" href="https://github.com/huangwenbang110-droid/articles" target="_blank" rel="noopener">
+        <div class="k">04</div>
+        <h3>拥抱开源协议，但不切换：接入 OpenTelemetry 的代价清单</h3>
+        <p>协议转换怎么做的，以及决定接入、决定不切换，各自的依据是什么。</p>
+        <span class="status wip">写作中</span>
       </a>
-      <div class="card reveal" data-page-node-id="vey4SDBDtPfvdISMeKUpq4">
-        <div class="k" data-page-node-id="fNkIYp06sjeEngDFBmEUYQ">05</div>
-        <h3 data-page-node-id="uDqAB5mAvQswvEOeCuBb4J">双协议并行</h3>
-        <p data-page-node-id="sGnAQGBuffk9JAUuqp5IuB">路径式编号与 OTel 父子结构两套语义映射同时存在、双发协议；存量探针不改。</p>
-        <span class="status" data-page-node-id="TYqKT80fXZFpddA9GT2rJ6">待写</span>
+      <div class="card reveal">
+        <div class="k">05</div>
+        <h3>双协议并行</h3>
+        <p>路径式编号与 OTel 父子结构两套语义映射同时存在、双发协议；存量探针不改。</p>
+        <span class="status">待写</span>
       </div>
-      <div class="card reveal" data-page-node-id="15wyaLt1aUWvB3vWM9VDKu">
-        <div class="k" data-page-node-id="SHhZrZZG4gGpZgCcl8b8zy">06</div>
-        <h3 data-page-node-id="LWejknLMgZALymNv8yZlxp">日均数十 TB：规模带来的工程问题</h3>
-        <p data-page-node-id="K4gQRO5bgEpYbE6t04r7NF">量级过了某条线之后，哪些常规做法会失效。</p>
-        <span class="status" data-page-node-id="5XqAReB12s7VSjmqDxlbIs">待写</span>
+      <div class="card reveal">
+        <div class="k">06</div>
+        <h3>日均数十 TB：规模带来的工程问题</h3>
+        <p>量级过了某条线之后，哪些常规做法会失效。</p>
+        <span class="status">待写</span>
       </div>
-      <div class="card reveal" data-page-node-id="Adn7D0tU9Y5ikRsFu1zEGD">
-        <div class="k" data-page-node-id="9esnM8G3seCOwP4wEWhayU">07</div>
-        <h3 data-page-node-id="OFHhPebFjn8pecn778cRpx">AIOps 探索</h3>
-        <p data-page-node-id="nJVOJgdCBDYKFNmIJMzHhO">只读 MCP 工具 + AutoFlow 编排；工具粒度与权限边界；幻觉、成本、时延各自试到了哪一步。</p>
-        <span class="status" data-page-node-id="fm92XTb8FHRdpfV77BANFb">待写</span>
+      <div class="card reveal">
+        <div class="k">07</div>
+        <h3>AIOps 探索</h3>
+        <p>只读 MCP 工具 + AutoFlow 编排；工具粒度与权限边界；幻觉、成本、时延各自试到了哪一步。</p>
+        <span class="status">待写</span>
       </div>
-      <div class="card reveal" data-page-node-id="Q2uBq5hAQTcRfYnNCC6kNs">
-        <div class="k" data-page-node-id="ZC63Rx6fM8qdgBgd9HhBiU">08</div>
-        <h3 data-page-node-id="upaXuhjQ2niNmaJ1RBYmCk">AI 可观测落地</h3>
-        <p data-page-node-id="fuJlxCaBo2vDGn4cH9UOj3">Span 层的成本计算与内容脱敏怎么落地；采集层已饱和，治理层才是缺口。</p>
-        <span class="status" data-page-node-id="BnuJovBlilln4iOgtLMqy2">待写</span>
+      <div class="card reveal">
+        <div class="k">08</div>
+        <h3>AI 可观测落地</h3>
+        <p>Span 层的成本计算与内容脱敏怎么落地；采集层已饱和，治理层才是缺口。</p>
+        <span class="status">待写</span>
       </div>
     </div>
   </div>
 </section>
 
-<section id="projects" data-page-node-id="XrCA0vX4f6aCMkpWPFhglJ">
-  <div class="wrap" data-page-node-id="rNLOewUrghUZ9rbh8yFAzc">
-    <div class="sec-head reveal" data-page-node-id="dC3Jl5AUMX7IYtV20EMygB">
-      <div class="sec-label" data-page-node-id="955pVEG1tXC24iBuaHTa4g">gh repo view ai-observability-guard</div>
-      <h2 data-page-node-id="8jK2jxIqAbtb06NR9O1azG">开源项目</h2>
-      <p class="sec-sub" data-page-node-id="KTFBhvT8nh9cJgBavzGNeY">文章讲"为什么"，项目证明"做得出"。</p>
+<section id="projects">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-label">gh repo view ai-observability-guard</div>
+      <h2>开源项目</h2>
+      <p class="sec-sub">文章讲"为什么"，项目证明"做得出"。</p>
     </div>
-    <div class="proj reveal" data-page-node-id="VhFDmgDpqOYi2qrzrkHKaH">
-      <div class="proj-top" data-page-node-id="PoCVxs7NHRgACL4ieKmmKg">
-        <span class="proj-name" data-page-node-id="VJomCYervp40JN1ajuQ14E">ai-observability-guard</span>
-        <span class="status wip" style="font-size:11.5px;font-family:var(--mono);color:#fbbf24;border:1px solid rgba(251,191,36,0.28);padding:2px 9px;border-radius:5px;" data-page-node-id="IxDCSk54z8m7QlqKHDUVNq">开发中 · 即将开源</span>
+    <div class="proj reveal">
+      <div class="proj-top">
+        <span class="proj-name">ai-observability-guard</span>
+        <span class="status wip" style="font-size:11.5px;font-family:var(--mono);color:#fbbf24;border:1px solid rgba(251,191,36,0.28);padding:2px 9px;border-radius:5px;">开发中 · 即将开源</span>
       </div>
-      <p class="proj-desc" data-page-node-id="NHiKzWYlh1L6QkaCFYxX9F">
+      <p class="proj-desc">
         零侵入的 Java Agent，在 OpenTelemetry Span 层为 Java AI 框架补上成本治理与内容脱敏；
         配一个 Spring Boot Starter 补上调用前的预算熔断与循环检测。
         一个实现覆盖所有 emit GenAI span 的框架，对框架版本免疫。
       </p>
-      <div class="tags" data-page-node-id="vKHLpCD0kLLk4yvXPxPLQC">
-        <span class="tag" data-page-node-id="nzl7G7x510DfzHmSZ6fHdA">Java 21</span>
-        <span class="tag" data-page-node-id="HwUMlLhHWC5qa18TTBla6q">OpenTelemetry</span>
-        <span class="tag" data-page-node-id="XDOwmDKMmkqC38fORjAxY9">Spring AI</span>
-        <span class="tag" data-page-node-id="IsMIsSGm7cIIwIXEHHdLXE">LangChain4j</span>
-        <span class="tag" data-page-node-id="ic3NB8EExnFlSgrkGXWEt7">Apache-2.0</span>
+      <div class="tags">
+        <span class="tag">Java 21</span>
+        <span class="tag">OpenTelemetry</span>
+        <span class="tag">Spring AI</span>
+        <span class="tag">LangChain4j</span>
+        <span class="tag">Apache-2.0</span>
       </div>
     </div>
   </div>
 </section>
 
-<footer data-page-node-id="atYOuk547GFApPWgHHr2fM">
-  <div class="wrap foot" data-page-node-id="HYOg4747HmzvYbwNNU2eoJ">
-    <div data-page-node-id="H7CCo2Kspj7FJ6SWGYBmQ3">云原生可观测 · 从自研 SDK 到 AI 可观测</div>
-    <div data-page-node-id="KzJhgXlXiKlDt2IlOwkrBS"><a href="https://github.com/huangwenbang110-droid" target="_blank" rel="noopener" data-page-node-id="F9a7JluRPYMlvBC5AfEFmZ">GitHub</a></div>
+<footer>
+  <div class="wrap foot">
+    <div>云原生可观测 · 从自研 SDK 到 AI 可观测</div>
+    <div><a href="https://github.com/huangwenbang110-droid" target="_blank" rel="noopener">GitHub</a></div>
   </div>
 </footer>
 
