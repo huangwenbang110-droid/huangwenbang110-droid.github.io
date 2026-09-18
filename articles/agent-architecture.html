@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent 架构落地 · 云原生可观测</title>
+<meta name="description" content="Agent 架构落地 —— 可观测演进笔记 03">
+<style>
+  :root {
+    --bg: #08090a; --surface: #0f1011; --surface-2: #141517;
+    --border: #1f2023; --border-bright: #2e3138;
+    --text: #f7f8f8; --text-2: #8a8f98; --text-3: #5c6169;
+    --accent: #7c5cff; --accent-2: #22d3ee; --green: #4ade80;
+    --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 16px; line-height: 1.65; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  a { color: inherit; text-decoration: none; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+  @keyframes blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+
+  nav { position: sticky; top: 0; z-index: 100; backdrop-filter: blur(12px); background: rgba(8,9,10,0.75); border-bottom: 1px solid var(--border); }
+  .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+  .brand { font-size: 15px; font-weight: 500; letter-spacing: -0.01em; display: flex; align-items: center; gap: 9px; }
+  .brand-path { font-family: var(--mono); font-size: 12px; color: var(--text-3); font-weight: 400; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+  .nav-links { display: flex; gap: 28px; font-size: 14px; color: var(--text-2); }
+  .nav-links a { transition: color .18s; }
+  .nav-links a:hover { color: var(--text); }
+  @media (max-width: 700px) { .nav-links { display: none; } .brand-path { display: none; } }
+
+  .sec-label { font-family: var(--mono); font-size: 12.5px; color: var(--text-3); letter-spacing: 0.02em; }
+  .sec-label::before { content: "$ "; color: var(--accent); }
+
+  .art { max-width: 760px; margin: 0 auto; padding: 0 24px 40px; }
+  .art-head { max-width: 760px; margin: 0 auto; padding: 56px 24px 8px; }
+  .art-head .k { font-family: var(--mono); font-size: 11px; color: var(--accent); letter-spacing: 0.06em; }
+  .art-head h1 { font-size: clamp(1.8rem, 4vw, 2.7rem); line-height: 1.15; letter-spacing: -0.03em; font-weight: 500; margin: 12px 0 14px; }
+  .art-head h1 .grad { background: linear-gradient(102deg, #ffffff 8%, #a78bfa 52%, #22d3ee 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .art-head .sub { color: var(--text-2); font-size: 15px; }
+  .art-hr { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+  .art-hr hr { border: none; border-top: 1px solid var(--border); }
+
+  .art p { color: var(--text-2); font-size: 16px; line-height: 1.85; margin-bottom: 20px; }
+  .art strong { color: var(--text); font-weight: 600; }
+  .art em { color: var(--text-3); }
+  .art a { color: var(--accent-2); border-bottom: 1px solid rgba(34,211,238,0.3); }
+  .art a:hover { border-bottom-color: var(--accent-2); }
+  .art h2 { font-size: 22px; font-weight: 500; letter-spacing: -0.02em; color: var(--text); margin: 46px 0 18px; }
+  .art h3 { font-size: 17px; font-weight: 500; color: var(--text); margin: 32px 0 12px; }
+  .art ul, .art ol { color: var(--text-2); font-size: 16px; line-height: 1.8; margin: 0 0 20px 22px; }
+  .art li { margin-bottom: 8px; }
+  .art code { font-family: var(--mono); font-size: 13.5px; color: var(--text); background: var(--surface-2); border: 1px solid var(--border); padding: 1px 6px; border-radius: 4px; }
+  .art pre { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; overflow-x: auto; margin-bottom: 22px; }
+  .art pre code { background: none; border: none; padding: 0; font-size: 13px; color: var(--text-2); line-height: 1.7; }
+  .art blockquote { border-left: 2px solid var(--accent); background: rgba(124,92,255,0.06); padding: 14px 18px; border-radius: 0 8px 8px 0; margin-bottom: 22px; }
+  .art blockquote p { color: var(--text); margin-bottom: 10px; }
+  .art blockquote p:last-child { margin-bottom: 0; }
+  .art img { width: 100%; border: 1px solid var(--border); border-radius: 10px; margin: 8px 0 26px; background: var(--surface); }
+  .art hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+  .art table { width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 14.5px; }
+  .art th { text-align: left; color: var(--text-3); font-weight: 500; font-size: 13px; padding: 10px 12px; border-bottom: 1px solid var(--border-bright); }
+  .art td { color: var(--text-2); padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  .art td code, .art th code { font-size: 12.5px; }
+
+  .art-foot { max-width: 760px; margin: 0 auto; padding: 0 24px 90px; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .back { font-family: var(--mono); font-size: 13px; color: var(--text-2); border: 1px solid var(--border); padding: 9px 16px; border-radius: 8px; background: var(--surface); transition: all .18s; }
+  .back:hover { border-color: var(--border-bright); background: var(--surface-2); color: var(--text); }
+  .back .ps { color: var(--accent); }
+  .next-link { font-size: 14px; color: var(--text-2); }
+  .next-link:hover { color: var(--text); }
+  .foot-links { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+  @media (max-width: 640px) { .art-head { padding-top: 36px; } }
+
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap nav-inner">
+    <a class="brand" href="../index.html"><span class="dot"></span>云原生可观测 <span class="brand-path">~/observability/writing</span></a>
+    <div class="nav-links">
+      <a href="../index.html#evolution">演进线</a>
+      <a href="../index.html#writing">文章</a>
+      <a href="../index.html#projects">开源</a>
+      <a href="https://github.com/huangwenbang110-droid" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </div>
+</nav>
+
+<div class="art-head">
+  <div class="sec-label">cat ./writing/03.md</div>
+  <div class="k">03</div>
+  <h1><span class="grad">Agent 架构落地</span></h1>
+  <p class="sub">Java 与 Python 两套 Agent 的实现差异（2022 – 2026）</p>
+</div>
+<div class="art-hr"><hr></div>
+
+<article class="art">
+<h2>一、为什么会有两套</h2>
+<p>Agent 不是一种技术，是一个概念：<strong>在运行时改写目标程序的行为，把观测逻辑插进去。</strong></p>
+<p>这个概念在不同语言里的落地方式完全不同 —— 因为每种语言给外部程序留的入口不一样。</p>
+<p>Java 有虚拟机规范，规范里明确定义了 <code>premain</code>、<code>agentmain</code>、字节码格式、类加载机制。所以 Java Agent 有标准可循。</p>
+<p>Python 没有虚拟机规范这一层。它没有"挂载 Agent"的官方入口，只能靠在 import 阶段替换对象来达到同样效果。</p>
+<p>结果是：<strong>同一个目标，两套完全不同的实现，代码层面几乎不共用任何东西。</strong></p>
+<hr>
+<h2>二、Java Agent：字节码增强</h2>
+<h3>挂载</h3>
+<p><code>-javaagent:xxx.jar</code> 启动参数，JVM 在业务类加载之前回调 <code>premain</code>。这时候能拿到一个 <code>Instrumentation</code> 实例，接下来所有增强都通过它做。</p>
+<h3>增强</h3>
+<p>核心是<strong>字节码转换器</strong>：注册一个 <code>ClassFileTransformer</code>，JVM 每加载一个类，就把它交给你改一遍。</p>
+<p>实际实现一般不自写字节码操作代码，而是用 ByteBuddy 或 ASM 这类库 —— 前者提供声明式的匹配与插桩 API，后者是纯字节码汇编。</p>
+<p>一次增强大概要做四件事：</p>
+<ol><li><strong>匹配</strong>：判断这个类是不是我要增强的目标（类名、父类、实现的接口、注解、方法签名）</li><li><strong>插桩</strong>：在目标方法的入口和出口插入代码</li><li><strong>取上下文</strong>：入口把当前调用信息放进上下文（线程局部变量或显式传递）</li><li><strong>上报</strong>：出口把这条 span 交出去</li></ol>
+<h3>几个真实约束</h3>
+<p><strong>类加载顺序决定增强时机。</strong> 要增强的类在 Agent 之后加载，才能被截到。如果某个类已经被加载了（早启动的框架、Bootstrap 类），要么提前挂载，要么就得走 retransform。</p>
+<p><strong>ClassLoader 体系比想象的复杂。</strong> 同一个类名可能被不同的 ClassLoader 加载出多份，增强时要确认改的是哪一份、改完之后引用它的人能不能看到。</p>
+<p><strong>增强要能安全失败。</strong> 插桩代码抛异常会让业务方法直接失败。所以所有观测逻辑都包在 try-catch 里 —— <strong>探针出问题不能影响业务，这条是底线。</strong> 增强失败就退化成"这个类没有数据"，不能退化成"这个应用报错"。</p>
+<hr>
+<h2>三、Python Agent：Monkey Patching</h2>
+<p>Python 侧没有 <code>premain</code>，没有 <code>Instrumentation</code>，没有字节码转换器的标准入口。</p>
+<p>能做到类似效果的只有一条路：<strong>在目标模块被导入时，把它的函数替换掉。</strong></p>
+<pre><code>_original = module.func
+
+def patched(*args, **kwargs):
+    start = time.time()
+    try:
+        return _original(*args, **kwargs)
+    finally:
+        report(module, func, time.time() - start)
+
+module.func = patched</code></pre>
+<p>这套做法叫 monkey patching。它不需要改业务代码，效果上跟字节码增强是一回事 —— 但<strong>机制完全不同</strong>：</p>
+<table><thead><tr><th></th><th>Java Agent</th><th>Python Agent</th></tr></thead><tbody><tr><td>挂载入口</td><td><code>premain</code> / <code>agentmain</code>（规范定义）</td><td>无标准入口，靠 import hook 或显式初始化</td></tr><tr><td>增强方式</td><td>改写字节码</td><td>替换运行时对象</td></tr><tr><td>生效时机</td><td>类加载时</td><td>目标模块导入时</td></tr><tr><td>生命周期</td><td>规范保证</td><td>完全取决于替换时机</td></tr><tr><td>卸载</td><td>可以 retransform 还原</td><td>只能手工换回去</td></tr></tbody></table>
+<h3>Python 侧的四个具体难点</h3>
+<p><strong>1. 时机比 Java 敏感得多。</strong></p>
+<p>Python 的 <code>import</code> 会缓存模块对象。如果目标模块在探针初始化之前就被导入了，再替换就得从 <code>sys.modules</code> 里找到它 —— 而且已经被别处 <code>from xxx import func</code> 拿走的引用是换不掉的（那是另一个名字指向旧对象）。</p>
+<p>所以 Python Agent 基本都要求<strong>尽早初始化</strong>：在业务代码导入框架之前就装好。实际部署里靠启动脚本、<code>sitecustomize</code>、或者框架自己的初始化钩子来保证。</p>
+<p><strong>2. 替换会丢掉函数签名和元信息。</strong></p>
+<p><code>def patched(*args, **kwargs)</code> 把所有参数吃掉了。任何依赖签名做检查的地方（装饰器、类型校验、Web 框架的参数绑定、依赖注入）都可能因此出问题。</p>
+<p>要保住就得用 <code>functools.wraps</code> + <code>inspect.signature</code> 手工还原，<strong>每包装一个函数都要做一遍</strong>。</p>
+<p><strong>3. 异步是单独一套。</strong></p>
+<p>同步和异步要分别处理。<code>async def</code> 的函数包装之后必须还是协程（不能是普通函数返回协程），否则 <code>await</code> 直接报错。</p>
+<p>而且上下文传递的机制不一样：同步用线程局部，异步要靠 <code>contextvars</code> —— 后者才是协程上下文里能正确传播的方式。</p>
+<p><strong>4. 进程模型不一样。</strong></p>
+<p>Java 是一个 JVM，多线程共享内存。</p>
+<p>Python 用 gunicorn / uwsgi 部署时是<strong>多进程</strong>：master 进程 fork 出多个 worker。探针在 fork 之前初始化的状态会被复制过去，fork 之后各 worker 独立 —— 本地缓冲、采样计数、上报连接都要按进程重新处理，否则会出现多个 worker 报同一份数据、或者缓冲被重复写。</p>
+<p><strong>GIL 也是约束。</strong> 上报逻辑不能阻塞业务线程，必须异步化或者放独立线程 —— 但独立线程仍然抢 GIL。所以 Python 侧的采样和上报比 Java 侧更保守。</p>
+<hr>
+<h2>四、两套 Agent 里共用的东西</h2>
+<p>实现机制完全不同，但<strong>对上层来说是同一套数据模型</strong>。</p>
+<p>两套 Agent 产出的 span 结构对齐：</p>
+<ul><li>同一个 span 概念：名称、类型、开始时间、耗时、状态、父子关系</li><li>同一套上下文传播规则：跨进程时透传的 header 字段一致</li><li>同一套属性命名与语义</li></ul>
+<p>所以平台侧不需要区分这条链路是 Java 来的还是 Python 来的 —— 它看到的是同一种数据。</p>
+<p><strong>跨语言链路能串起来，靠的就是这一层对齐。</strong> 一个 Java 服务调 Python 服务，两边用同样的 header 传播上下文，平台侧拼出来的是一条完整的 trace。</p>
+<p>这一层对齐是刻意做的，也是最花精力的部分 —— 它要求两套 Agent 的<strong>语义定义</strong>先统一，再各自实现。</p>
+<hr>
+<h2>五、判断层：为什么不能共用一套设计</h2>
+<p>问题其实反过来问更清楚：<strong>为什么不能把 Java 那套思路搬到 Python？</strong></p>
+<p>答案是不能。因为"字节码增强"在 Python 里没有对应物：</p>
+<ul><li>Python 没有可操作的字节码加载钩子（有 <code>importlib</code> 的 loader 钩子，但它是<strong>文件级</strong>的，不是类级、方法级的）</li><li>Python 的函数是运行时对象，可以被替换 —— 这是优势，但代价是<strong>没有被替换的引用换不掉</strong></li><li>没有 ClassLoader 体系，但有多进程 + 协程，复杂度换了个地方</li></ul>
+<p>所以两套实现不是"重复劳动"，是<strong>同一个目标在两种运行时上的必然解法</strong>。共用部分只能共用数据模型和语义定义，不能共用实现。</p>
+<h3>另一个现实：Java 是主线</h3>
+<p>Python 侧的探针一直比 Java 侧覆盖范围窄。原因是投入产出比 —— Java 应用是绝大多数，Python 应用集中在少数几块。</p>
+<p>于是维护上的差别也很明显：Java Agent 的增强规则按框架逐类维护，Python Agent 主要是把几个主流框架（Web 框架、数据库客户端、HTTP 客户端）盖住。</p>
+<p><strong>这是资源分配的判断，不是技术判断。</strong> 后面接入 OpenTelemetry 的时候，这个差异又影响了一次决策 —— 因为 OTel 在 Java 侧的生态成熟度比 Python 侧好得多。</p>
+<hr>
+<h2>六、后来</h2>
+<p>两套 Agent 一直并行维护到现在。</p>
+<p>真正让维护成本降下来的，是后面引入了 OpenTelemetry 的标准模型：<strong>不再自己定义 span 结构和跨进程传播格式，改用社区标准。</strong> 新语言接入直接走 OTel 的 SDK，不用再写第三套自研 Agent。</p>
+<p>但存量那两套没有下线 —— 这也是为什么现在有两套协议同时在跑（第 5 篇）。</p>
+<hr>
+<p><em>下一篇：接入 OpenTelemetry 的代价清单 —— 以及为什么决定接入、却不切换。</em></p>
+</article>
+
+<div class="art-foot">
+  <a class="back" href="sdk-to-agent.html"><span class="ps">$</span> cd ..</a>
+  <div class="foot-links"><a class="next-link" href="opentelemetry-without-switching.html">下一篇：拥抱开源协议，但不切换：接入 OpenTelemetry 的代价清单 →</a><a class="next-link" href="../index.html#writing">全部文章</a></div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>拥抱开源协议，但不切换：接入 OpenTelemetry 的代价清单 · 云原生可观测</title>
+<meta name="description" content="拥抱开源协议，但不切换：接入 OpenTelemetry 的代价清单 —— 可观测演进笔记 04">
+<style>
+  :root {
+    --bg: #08090a; --surface: #0f1011; --surface-2: #141517;
+    --border: #1f2023; --border-bright: #2e3138;
+    --text: #f7f8f8; --text-2: #8a8f98; --text-3: #5c6169;
+    --accent: #7c5cff; --accent-2: #22d3ee; --green: #4ade80;
+    --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 16px; line-height: 1.65; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  a { color: inherit; text-decoration: none; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+  @keyframes blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+
+  nav { position: sticky; top: 0; z-index: 100; backdrop-filter: blur(12px); background: rgba(8,9,10,0.75); border-bottom: 1px solid var(--border); }
+  .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+  .brand { font-size: 15px; font-weight: 500; letter-spacing: -0.01em; display: flex; align-items: center; gap: 9px; }
+  .brand-path { font-family: var(--mono); font-size: 12px; color: var(--text-3); font-weight: 400; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+  .nav-links { display: flex; gap: 28px; font-size: 14px; color: var(--text-2); }
+  .nav-links a { transition: color .18s; }
+  .nav-links a:hover { color: var(--text); }
+  @media (max-width: 700px) { .nav-links { display: none; } .brand-path { display: none; } }
+
+  .sec-label { font-family: var(--mono); font-size: 12.5px; color: var(--text-3); letter-spacing: 0.02em; }
+  .sec-label::before { content: "$ "; color: var(--accent); }
+
+  .art { max-width: 760px; margin: 0 auto; padding: 0 24px 40px; }
+  .art-head { max-width: 760px; margin: 0 auto; padding: 56px 24px 8px; }
+  .art-head .k { font-family: var(--mono); font-size: 11px; color: var(--accent); letter-spacing: 0.06em; }
+  .art-head h1 { font-size: clamp(1.8rem, 4vw, 2.7rem); line-height: 1.15; letter-spacing: -0.03em; font-weight: 500; margin: 12px 0 14px; }
+  .art-head h1 .grad { background: linear-gradient(102deg, #ffffff 8%, #a78bfa 52%, #22d3ee 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .art-head .sub { color: var(--text-2); font-size: 15px; }
+  .art-hr { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+  .art-hr hr { border: none; border-top: 1px solid var(--border); }
+
+  .art p { color: var(--text-2); font-size: 16px; line-height: 1.85; margin-bottom: 20px; }
+  .art strong { color: var(--text); font-weight: 600; }
+  .art em { color: var(--text-3); }
+  .art a { color: var(--accent-2); border-bottom: 1px solid rgba(34,211,238,0.3); }
+  .art a:hover { border-bottom-color: var(--accent-2); }
+  .art h2 { font-size: 22px; font-weight: 500; letter-spacing: -0.02em; color: var(--text); margin: 46px 0 18px; }
+  .art h3 { font-size: 17px; font-weight: 500; color: var(--text); margin: 32px 0 12px; }
+  .art ul, .art ol { color: var(--text-2); font-size: 16px; line-height: 1.8; margin: 0 0 20px 22px; }
+  .art li { margin-bottom: 8px; }
+  .art code { font-family: var(--mono); font-size: 13.5px; color: var(--text); background: var(--surface-2); border: 1px solid var(--border); padding: 1px 6px; border-radius: 4px; }
+  .art pre { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; overflow-x: auto; margin-bottom: 22px; }
+  .art pre code { background: none; border: none; padding: 0; font-size: 13px; color: var(--text-2); line-height: 1.7; }
+  .art blockquote { border-left: 2px solid var(--accent); background: rgba(124,92,255,0.06); padding: 14px 18px; border-radius: 0 8px 8px 0; margin-bottom: 22px; }
+  .art blockquote p { color: var(--text); margin-bottom: 10px; }
+  .art blockquote p:last-child { margin-bottom: 0; }
+  .art img { width: 100%; border: 1px solid var(--border); border-radius: 10px; margin: 8px 0 26px; background: var(--surface); }
+  .art hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+  .art table { width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 14.5px; }
+  .art th { text-align: left; color: var(--text-3); font-weight: 500; font-size: 13px; padding: 10px 12px; border-bottom: 1px solid var(--border-bright); }
+  .art td { color: var(--text-2); padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  .art td code, .art th code { font-size: 12.5px; }
+
+  .art-foot { max-width: 760px; margin: 0 auto; padding: 0 24px 90px; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .back { font-family: var(--mono); font-size: 13px; color: var(--text-2); border: 1px solid var(--border); padding: 9px 16px; border-radius: 8px; background: var(--surface); transition: all .18s; }
+  .back:hover { border-color: var(--border-bright); background: var(--surface-2); color: var(--text); }
+  .back .ps { color: var(--accent); }
+  .next-link { font-size: 14px; color: var(--text-2); }
+  .next-link:hover { color: var(--text); }
+  .foot-links { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+  @media (max-width: 640px) { .art-head { padding-top: 36px; } }
+
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap nav-inner">
+    <a class="brand" href="../index.html"><span class="dot"></span>云原生可观测 <span class="brand-path">~/observability/writing</span></a>
+    <div class="nav-links">
+      <a href="../index.html#evolution">演进线</a>
+      <a href="../index.html#writing">文章</a>
+      <a href="../index.html#projects">开源</a>
+      <a href="https://github.com/huangwenbang110-droid" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </div>
+</nav>
+
+<div class="art-head">
+  <div class="sec-label">cat ./writing/04.md</div>
+  <div class="k">04</div>
+  <h1><span class="grad">拥抱开源协议，但不切换：接入 OpenTelemetry 的代价清单</span></h1>
+  <p class="sub">第三代云原生可观测期间的一次协议决策</p>
+</div>
+<div class="art-hr"><hr></div>
+
+<article class="art">
+<h2>一、先把结论摆出来</h2>
+<p>我们接入了 OpenTelemetry。存量探针一个都没换。</p>
+<p>自研协议和 OTLP 两套同时跑，同一条 trace 按两种格式各上报一次。这个状态从接入那天持续到现在。</p>
+<p>下面是这件事的全部：做了什么，代价是什么，为什么没切换。</p>
+<hr>
+<h2>二、我们原来那套长什么样</h2>
+<p>自研协议里，一个 span 在链路中的位置，是用<strong>路径式编号</strong>表达的：</p>
+<pre><code>0          入口 span
+0.0        第一个子调用
+0.0.0      它的第一个子调用
+0.0.1      它的第二个子调用</code></pre>
+<p>规则很简单：根是 <code>0</code>，每个子 span 在父编号后面追加一段序号，兄弟之间自增。</p>
+<p>这套编号有几个好处，而且是实打实的好处：</p>
+<ul><li><strong>从编号本身就能读出结构</strong>。看到 <code>0.2.1</code> 就知道它是根节点的第 3 个孩子的第 2 个孩子，不用查任何索引</li><li><strong>字典序就是调用顺序</strong>。按编号排一下，拓扑序和时序都出来了</li><li><strong>子树查询是前缀匹配</strong>。<code>0.2%</code> 就能捞出一整棵子树，不需要递归遍历</li></ul>
+<p>平台层的查询、拓扑、告警、根因分析，都建在这个语义上。</p>
+<hr>
+<h2>三、OTel 的形状完全不同</h2>
+<p>OpenTelemetry 里没有"编号"这个概念。父子关系靠指针：</p>
+<ul><li><code>TraceId</code>（16 字节）标识一条链路</li><li><code>SpanId</code>（8 字节）标识一个 span</li><li><code>ParentSpanId</code> 指向父 span，根 span 的这个字段为空</li></ul>
+<p>要还原结构，得按 <code>ParentSpanId</code> 把 span 拼起来。</p>
+<p>两种表达的取舍：</p>
+<table><thead><tr><th></th><th>路径式编号</th><th>OTel 父子指针</th></tr></thead><tbody><tr><td>读结构</td><td>编号自带</td><td>需要拼装</td></tr><tr><td>插入节点</td><td>可能要重排后续编号</td><td>无代价</td></tr><tr><td>深度上限</td><td>编号随深度线性变长</td><td>无</td></tr><tr><td>子树查询</td><td>前缀匹配</td><td>需要遍历</td></tr><tr><td>跨进程传递</td><td>传当前编号</td><td>传 TraceId + SpanId</td></tr></tbody></table>
+<p>差异不大，但<strong>不兼容</strong>。一个 span 用编号表达位置，另一个用指针表达位置，中间没有直接映射。</p>
+<hr>
+<h2>四、转换层放在 SDK 侧</h2>
+<p>接入方式是在 SDK 里加一个协议转换模块：span 结束时，把自研的链路结构转成 OTel 的 SpanData，再按 OTLP 导出。</p>
+<p><strong>为什么在 SDK 侧做，不在服务端做？</strong></p>
+<p>服务端收到的是已经序列化好的数据，字段在序列化那一刻就定下来了。转换需要的上下文（父子关系、span 类型、业务属性）在服务端要么丢了，要么要重新反推一遍。SDK 侧结构完整，转换是顺手的事。</p>
+<p>转换完之后两条路并行：</p>
+<pre><code>span 结束
+   ├── 自研协议 ──&gt; 平台自有链路（存量查询、告警、拓扑继续用）
+   └── OTLP     ──&gt; OTel Collector ──&gt; 下游</code></pre>
+<p>存量探针不用改，新接入的走标准协议。</p>
+<hr>
+<h2>五、踩过的坑</h2>
+<h3>1. span 类型字段没有对应的语义</h3>
+<p>自研协议里每个 span 带一个类型标记，其中有一类是「方法级」span —— 一次本地方法调用的埋点。</p>
+<p>OTel 的语义约定里没有这一类。<code>SERVER</code> / <code>CLIENT</code> / <code>INTERNAL</code> / <code>PRODUCER</code> / <code>CONSUMER</code> 五种，<code>INTERNAL</code> 勉强能装，但装进去之后，下游看到的就是一堆语义为空的内部 span，原来的分类信息没了。</p>
+<p>最后的处理是：转成 <code>INTERNAL</code>，把原类型塞进自定义属性。</p>
+<p>能跑，但这是<strong>信息降级</strong>，不是等价转换。下游如果按 OTel 语义做分析，这部分就拿不到东西。</p>
+<h3>2. 双发之后对不上账</h3>
+<p>两套协议导出的同一条 trace，span 数量偶尔不一致。</p>
+<p>原因是采样和丢弃策略在两条路上不完全同步：自研链路有本地缓冲和降级，OTLP 走 Collector 的批处理，两边在压力下的丢弃条件不一样。</p>
+<p>排查的时候要能回答：<strong>这条数据是哪条路丢的。</strong> 这个问题在两套协议下比一套协议时难回答。</p>
+<h3>3. 属性名的对齐</h3>
+<p>自研协议里的业务属性名是内部定的。OTel 有语义约定（semantic conventions），同一类信息在不同的版本里名字还会变。</p>
+<p>对齐这件事没有终点：上游语义约定还在演进，我们的映射表就得跟着改。</p>
+<hr>
+<h2>六、为什么不切换</h2>
+<p>不切换的理由是三条，每条都很硬。</p>
+<p><strong>第一，存量改不动。</strong></p>
+<p>探针铺在数百应用、数千业务单元上，版本分散。金融场景的变更窗口小，一次全量升级不现实。</p>
+<p>而且探针不是升级完就完了 —— 升级之后要回归、要观察、要处理业务方反馈。存量越大，这个过程的绝对时间越长。</p>
+<p><strong>第二，平台层建在编号语义上。</strong></p>
+<p>前面说过，查询、拓扑、告警、根因分析都在用前缀匹配。切到父子指针，这些全部要重写。</p>
+<p>重写不是翻译，是换一种数据组织方式。中间还有一段两种数据结构并存的时间。</p>
+<p><strong>第三，切换的收益在外部，代价在内部。</strong></p>
+<p>切到 OTel 的收益主要是：对外标准、生态工具可直接接入、不用自己维护协议。</p>
+<p>这些收益是真的，但它们主要作用在<strong>对接外部</strong>这件事上。而我们平台当时的绝大部分使用量，是自己的查询页面和自己的告警规则 —— 这部分切过去没有任何收益。</p>
+<p>所以最后的选择是：<strong>对外接标准，对内不动。</strong></p>
+<p>新接入的应用直接走 OTel，走一条标准路。存量继续走自研协议。两条路在平台层汇合。</p>
+<hr>
+<h2>七、代价清单</h2>
+<p>这是这篇最想写的部分。接入标准协议不是"做完就轻松了"，它把一批成本永久地留在了系统里。</p>
+<ol><li><strong>两套语义映射同时维护。</strong> 字段对字段的映射表有两份方向（出去、进来），上游改一次，两边都要跟。</li></ol>
+<ol><li><strong>协议转换有运行时开销。</strong> 每个 span 结束都要多做一次结构转换和一次序列化。量大的时候这笔开销不小。</li></ol>
+<ol><li><strong>双发等于双份。</strong> 网络带宽、序列化 CPU、下游存储，全都是两份。</li></ol>
+<ol><li><strong>排查时多一层判断。</strong> 数据对不上，第一步不是查数据，是先确认走的哪条路。两套协议把这个心智负担加在了每一次排查上。</li></ol>
+<ol><li><strong>语义对不齐的地方会一直存在。</strong> 像 span 类型这种，转过去就是降级。不会因为接入了标准就消失。</li></ol>
+<ol><li><strong>新人要学两套。</strong> 团队里每个人都要理解两种链路表达，以及它们什么时候不一致。</li></ol>
+<ol><li><strong>没有收敛计划本身就是代价。</strong> 双协议并行的状态如果一直持续，上面的每一条都会一直付下去。</li></ol>
+<hr>
+<h2>八、什么时候会收敛</h2>
+<p>自然收敛只有一条路：<strong>新接入走标准，存量随应用自身的迭代慢慢换掉。</strong></p>
+<p>这条路不需要额外投入，但很慢，而且永远到不了 100% —— 总会有应用不再迭代，也就永远不会换。</p>
+<hr>
+<h2>九、回看这个决定</h2>
+<p>做这个决定的时候，判断依据只有一条：<strong>代价要花在能产生收益的地方。</strong></p>
+<p>对外对接需要标准协议 —— 那就加一条对外的路。内部查询不需要换 —— 那就别换。</p>
+<p>代价是两套并存带来的长期维护成本。这笔成本我们付了，也还在付。</p>
+<p>如果重来一次，还是这个选择。可能做得更好的地方是：<strong>早点把两条路的边界划清楚</strong> —— 哪条路对外、哪条路对内、哪些语义注定对不齐。这些在开始的时候是模糊的，后来才慢慢明确。</p>
+<hr>
+<p><em>第 5 篇写两套语义映射具体怎么落地，以及长期的维护成本。</em></p>
+</article>
+
+<div class="art-foot">
+  <a class="back" href="agent-architecture.html"><span class="ps">$</span> cd ..</a>
+  <div class="foot-links"><a class="next-link" href="dual-protocol.html">下一篇：双协议并行 →</a><a class="next-link" href="../index.html#writing">全部文章</a></div>
+</div>
+
+</body>
+</html>

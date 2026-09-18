@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>从 SDK 到 Agent · 云原生可观测</title>
+<meta name="description" content="从 SDK 到 Agent —— 可观测演进笔记 02">
+<style>
+  :root {
+    --bg: #08090a; --surface: #0f1011; --surface-2: #141517;
+    --border: #1f2023; --border-bright: #2e3138;
+    --text: #f7f8f8; --text-2: #8a8f98; --text-3: #5c6169;
+    --accent: #7c5cff; --accent-2: #22d3ee; --green: #4ade80;
+    --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 16px; line-height: 1.65; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  a { color: inherit; text-decoration: none; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+  @keyframes blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+
+  nav { position: sticky; top: 0; z-index: 100; backdrop-filter: blur(12px); background: rgba(8,9,10,0.75); border-bottom: 1px solid var(--border); }
+  .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+  .brand { font-size: 15px; font-weight: 500; letter-spacing: -0.01em; display: flex; align-items: center; gap: 9px; }
+  .brand-path { font-family: var(--mono); font-size: 12px; color: var(--text-3); font-weight: 400; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+  .nav-links { display: flex; gap: 28px; font-size: 14px; color: var(--text-2); }
+  .nav-links a { transition: color .18s; }
+  .nav-links a:hover { color: var(--text); }
+  @media (max-width: 700px) { .nav-links { display: none; } .brand-path { display: none; } }
+
+  .sec-label { font-family: var(--mono); font-size: 12.5px; color: var(--text-3); letter-spacing: 0.02em; }
+  .sec-label::before { content: "$ "; color: var(--accent); }
+
+  .art { max-width: 760px; margin: 0 auto; padding: 0 24px 40px; }
+  .art-head { max-width: 760px; margin: 0 auto; padding: 56px 24px 8px; }
+  .art-head .k { font-family: var(--mono); font-size: 11px; color: var(--accent); letter-spacing: 0.06em; }
+  .art-head h1 { font-size: clamp(1.8rem, 4vw, 2.7rem); line-height: 1.15; letter-spacing: -0.03em; font-weight: 500; margin: 12px 0 14px; }
+  .art-head h1 .grad { background: linear-gradient(102deg, #ffffff 8%, #a78bfa 52%, #22d3ee 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .art-head .sub { color: var(--text-2); font-size: 15px; }
+  .art-hr { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+  .art-hr hr { border: none; border-top: 1px solid var(--border); }
+
+  .art p { color: var(--text-2); font-size: 16px; line-height: 1.85; margin-bottom: 20px; }
+  .art strong { color: var(--text); font-weight: 600; }
+  .art em { color: var(--text-3); }
+  .art a { color: var(--accent-2); border-bottom: 1px solid rgba(34,211,238,0.3); }
+  .art a:hover { border-bottom-color: var(--accent-2); }
+  .art h2 { font-size: 22px; font-weight: 500; letter-spacing: -0.02em; color: var(--text); margin: 46px 0 18px; }
+  .art h3 { font-size: 17px; font-weight: 500; color: var(--text); margin: 32px 0 12px; }
+  .art ul, .art ol { color: var(--text-2); font-size: 16px; line-height: 1.8; margin: 0 0 20px 22px; }
+  .art li { margin-bottom: 8px; }
+  .art code { font-family: var(--mono); font-size: 13.5px; color: var(--text); background: var(--surface-2); border: 1px solid var(--border); padding: 1px 6px; border-radius: 4px; }
+  .art pre { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; overflow-x: auto; margin-bottom: 22px; }
+  .art pre code { background: none; border: none; padding: 0; font-size: 13px; color: var(--text-2); line-height: 1.7; }
+  .art blockquote { border-left: 2px solid var(--accent); background: rgba(124,92,255,0.06); padding: 14px 18px; border-radius: 0 8px 8px 0; margin-bottom: 22px; }
+  .art blockquote p { color: var(--text); margin-bottom: 10px; }
+  .art blockquote p:last-child { margin-bottom: 0; }
+  .art img { width: 100%; border: 1px solid var(--border); border-radius: 10px; margin: 8px 0 26px; background: var(--surface); }
+  .art hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+  .art table { width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 14.5px; }
+  .art th { text-align: left; color: var(--text-3); font-weight: 500; font-size: 13px; padding: 10px 12px; border-bottom: 1px solid var(--border-bright); }
+  .art td { color: var(--text-2); padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  .art td code, .art th code { font-size: 12.5px; }
+
+  .art-foot { max-width: 760px; margin: 0 auto; padding: 0 24px 90px; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .back { font-family: var(--mono); font-size: 13px; color: var(--text-2); border: 1px solid var(--border); padding: 9px 16px; border-radius: 8px; background: var(--surface); transition: all .18s; }
+  .back:hover { border-color: var(--border-bright); background: var(--surface-2); color: var(--text); }
+  .back .ps { color: var(--accent); }
+  .next-link { font-size: 14px; color: var(--text-2); }
+  .next-link:hover { color: var(--text); }
+  .foot-links { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+  @media (max-width: 640px) { .art-head { padding-top: 36px; } }
+
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap nav-inner">
+    <a class="brand" href="../index.html"><span class="dot"></span>云原生可观测 <span class="brand-path">~/observability/writing</span></a>
+    <div class="nav-links">
+      <a href="../index.html#evolution">演进线</a>
+      <a href="../index.html#writing">文章</a>
+      <a href="../index.html#projects">开源</a>
+      <a href="https://github.com/huangwenbang110-droid" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </div>
+</nav>
+
+<div class="art-head">
+  <div class="sec-label">cat ./writing/02.md</div>
+  <div class="k">02</div>
+  <h1><span class="grad">从 SDK 到 Agent</span></h1>
+  <p class="sub">探针形态的换代（2020 – 2022）</p>
+</div>
+<div class="art-hr"><hr></div>
+
+<article class="art">
+<h2>一、SDK 时代是怎么接的</h2>
+<p>第一代平台的采集方式只有一种：<strong>引一个 jar 包</strong>。</p>
+<p>业务方在 <code>pom.xml</code> 里加一行依赖，在配置文件里写几行参数，探针就装上了。日志那条线更轻 —— 继承一下 Appender，改一行日志配置就行。</p>
+<p>这套东西在头两年跑得很好。接入成本低，业务方不用学新东西，出问题也好排查 —— 代码就在自己的应用里，出栈一打就看得见。</p>
+<p><strong>但它有一个前提：应用是你自己的，你能改。</strong></p>
+<hr>
+<h2>二、规模上来之后，四个问题</h2>
+<h3>1. 版本碎片化</h3>
+<p>SDK 是编译期依赖。每个应用锁一个版本，升不升级由应用自己决定。</p>
+<p>结果就是：平台上跑着十几个不同版本的探针。每个版本的埋点字段、上报格式、配置项都可能不一样。平台侧要么兼容所有版本，要么等应用升。</p>
+<p><strong>升级一个探针，等于走一遍所有应用的发版流程。</strong> 在几百个应用的规模上，一轮升级的绝对时间是以季度算的。</p>
+<h3>2. 语言栈扩张</h3>
+<p>第一代只有 Java。</p>
+<p>后来业务方开始上 Python。要覆盖，就得再写一套 Python SDK —— 从零开始，跟 Java 那套除了数据格式以外什么都不共用。</p>
+<p>每多一种语言，就多一套 SDK 的开发和维护。</p>
+<h3>3. 覆盖不到第三方调用</h3>
+<p>这是最要命的一条。</p>
+<p>SDK 靠业务方在代码里主动调 API 来埋点。但调用链上大量的时间是花在<strong>框架和中间件</strong>上的：JDBC、Redis 客户端、HTTP 客户端、消息队列客户端。</p>
+<p>这些调用写在依赖库里，业务方的代码里只有一行 <code>redis.get(key)</code>。他没法为这一行去改 Redis 客户端。</p>
+<p><strong>业务代码能埋，框架里的调用埋不了。</strong> 而调用链的价值恰恰在于把整条链路串起来 —— 断在中间就没什么用了。</p>
+<h3>4. 接入要改代码</h3>
+<p>日志那条线之所以好用，是因为它只要改一行配置。指标和链路做不到 —— 要加依赖、要写埋点、要改打包配置、要重新发版。</p>
+<p>业务方的接入意愿直接跟改动量挂钩。改代码的接入，推进速度永远比改配置慢。</p>
+<hr>
+<h2>三、Agent 换掉的是什么</h2>
+<p>Agent 的形态：一个 jar 包，启动时挂在 JVM 上，通过字节码增强在<strong>运行时</strong>改写目标方法的入口和出口。</p>
+<p>业务方要做的只有一件事：启动参数加一个 <code>-javaagent:</code>。</p>
+<p>不引依赖、不改一行代码、不用重新打包业务逻辑（配置换个启动参数）。</p>
+<p><strong>变化在于接入的时机和位置：</strong></p>
+<table><thead><tr><th></th><th>SDK</th><th>Agent</th></tr></thead><tbody><tr><td>接入方式</td><td>编译期依赖</td><td>运行时挂载</td></tr><tr><td>改什么</td><td>业务方改自己的代码</td><td>增强目标类的方法</td></tr><tr><td>能覆盖的范围</td><td>业务方主动埋的点</td><td>所有挂到的框架调用</td></tr><tr><td>升级方式</td><td>逐应用升依赖 + 发版</td><td>换一个 jar、重启</td></tr><tr><td>多语言</td><td>每种语言一套 SDK</td><td>每种语言一套 Agent（机制不同）</td></tr></tbody></table>
+<p>从"改代码"变成"加一个启动参数"，这一条就解决了版本碎片化和接入意愿两个问题。</p>
+<hr>
+<h2>四、挂载方式</h2>
+<p>Java Agent 有两条挂载路径：</p>
+<p><strong>启动时挂载。</strong> JVM 启动参数里的 <code>-javaagent:</code> 指定 jar 包，JVM 在 <code>premain</code> 里回调 Agent 的入口，此时业务类还没加载。这是主要方式。</p>
+<p><strong>运行时挂载。</strong> 通过 <code>agentmain</code> + attach 机制挂到已经跑起来的进程上，不用重启。排查问题时很方便，但有些类已经加载完了，增强窗口更窄。</p>
+<p>我们的主路径是启动时挂载，运行时挂载用于临时排查。</p>
+<p><strong>增强的核心是方法入口和出口。</strong> 入口记录开始时间和上下文，出口记录耗时和结果，两头一夹就是一个 span。异常路径单独处理 —— 抛出异常也算出口。</p>
+<hr>
+<h2>五、增强范围</h2>
+<p>不是所有方法都能增强，也不是所有方法都值得增强。</p>
+<p>判断标准两条：<strong>这个调用是不是跨进程的</strong>，以及<strong>它是不是在关键路径上</strong>。</p>
+<p>落下来大概是这几类：</p>
+<ul><li>HTTP 客户端：知道下游是谁、耗时多少</li><li>JDBC：知道这条 SQL 打给哪个库、慢在哪</li><li>Redis / 缓存客户端：知道命中和耗时</li><li>消息队列客户端：知道生产端和消费端怎么串起来</li><li>线程池与异步调用：把跨线程的上下文传下去</li><li>应用入口：Servlet、RPC 框架的入口方法，链路从这里开始</li></ul>
+<p><strong>范围是逐步扩的，不是一次定的。</strong> 每加一类增强，都要评估它的开销和对框架版本的依赖 —— 增强一个高频调用的方法，开销是能看出来的。</p>
+<hr>
+<h2>六、配置下发</h2>
+<p>SDK 时代配置在应用侧，改配置要改应用的文件、要重启应用。</p>
+<p>Agent 时代配置可以集中下发：Agent 启动时从平台拉配置，平台侧改完，Agent 下次拉取时生效。</p>
+<p>能下发的包括：采样率、要增强的框架开关、要忽略的包名和方法名、上报的地址与批量参数。</p>
+<p>这条改变的意义比看起来大：<strong>采样率可以按应用调、按时间调，出问题的时候临时提高某个应用的采样率，不用碰应用。</strong></p>
+<hr>
+<h2>七、判断层：代价是什么</h2>
+<p>Agent 解决了 SDK 的问题，同时引进了两个新的。</p>
+<p><strong>增强框架类天生脆弱。</strong></p>
+<p>字节码增强依赖目标类的<strong>内部结构</strong>：方法签名、方法个数、调用顺序、字段名。这些东西不是公开契约，框架版本一升就可能变。</p>
+<p>变了之后的失败方式很隐蔽：不报错，只是<strong>不再产生数据</strong>。平台上看是"这个应用没接探针"，排查起来要从框架版本一路查到增强规则。</p>
+<p>（这个失败模式在开源社区的同类项目上也能看到 —— 有个基于字节码增强的方案，在框架版本升级之后静默失效，直到现在还没修。后面讲治理层的那篇专题会展开这个案例。）</p>
+<p><strong>问题排查变难。</strong></p>
+<p>SDK 出问题，栈是自己的代码。Agent 出问题，栈里多了一层"别人改过的字节码" —— 报错的行号可能对不上源码，异常可能出现在类加载阶段而不是执行阶段。</p>
+<p><strong>类加载器体系是新增的复杂面。</strong> Bootstrap / Extension / Application 之外，容器和中间件还会造自己的 ClassLoader。增强一个类之前，要先确定它是被哪个 ClassLoader 加载的，以及增强后的类能不能被正确加载。</p>
+<hr>
+<h2>八、SDK 没有被取代的那部分</h2>
+<p>Agent 覆盖了框架调用，但<strong>业务语义是猜不到的</strong>。</p>
+<p>"这个方法处理的是哪个客户的订单"、"这次请求命中了几个推荐位" —— 这类信息只有业务代码自己知道。</p>
+<p>所以 SDK 没有下线，它缩到了业务埋点这一块：Agent 负责框架和中间件，SDK 负责业务自定义的指标与事件。</p>
+<p>现在的形态是两者共存：<strong>框架调用靠 Agent 自动覆盖，业务语义靠 SDK 主动上报，两条数据在平台侧对上。</strong></p>
+<hr>
+<h2>九、后来</h2>
+<p>换成 Agent 之后，接入的推进速度明显不一样了 —— 从"改代码"变成"加启动参数"，业务方的抵触小了很多。</p>
+<p>但维护成本转移了。以前是维护 SDK 的 API 兼容性，现在是维护<strong>增强规则对框架版本的适配</strong>。框架升级一次，要验证一遍增强还成立。</p>
+<p>这笔成本是永久的。它也一直影响后面每一代探针的架构选择 —— 包括 OpenTelemetry 接入时为什么不做增强、为什么把治理层挂在已有的 span 上（第 4 篇、第 5 篇）。</p>
+<hr>
+<p><em>下一篇：Agent 架构落地 —— Java 和 Python 两套 Agent 的实现差异，以及为什么不能共用一套设计。</em></p>
+</article>
+
+<div class="art-foot">
+  <a class="back" href="platform-logs-metrics.html"><span class="ps">$</span> cd ..</a>
+  <div class="foot-links"><a class="next-link" href="agent-architecture.html">下一篇：Agent 架构落地 →</a><a class="next-link" href="../index.html#writing">全部文章</a></div>
+</div>
+
+</body>
+</html>
