@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIOps 探索 · 云原生可观测</title>
+<meta name="description" content="AIOps 探索 —— 可观测演进笔记 07">
+<style>
+  :root {
+    --bg: #08090a; --surface: #0f1011; --surface-2: #141517;
+    --border: #1f2023; --border-bright: #2e3138;
+    --text: #f7f8f8; --text-2: #8a8f98; --text-3: #5c6169;
+    --accent: #7c5cff; --accent-2: #22d3ee; --green: #4ade80;
+    --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 16px; line-height: 1.65; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  a { color: inherit; text-decoration: none; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+  @keyframes blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+
+  nav { position: sticky; top: 0; z-index: 100; backdrop-filter: blur(12px); background: rgba(8,9,10,0.75); border-bottom: 1px solid var(--border); }
+  .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+  .brand { font-size: 15px; font-weight: 500; letter-spacing: -0.01em; display: flex; align-items: center; gap: 9px; }
+  .brand-path { font-family: var(--mono); font-size: 12px; color: var(--text-3); font-weight: 400; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+  .nav-links { display: flex; gap: 28px; font-size: 14px; color: var(--text-2); }
+  .nav-links a { transition: color .18s; }
+  .nav-links a:hover { color: var(--text); }
+  @media (max-width: 700px) { .nav-links { display: none; } .brand-path { display: none; } }
+
+  .sec-label { font-family: var(--mono); font-size: 12.5px; color: var(--text-3); letter-spacing: 0.02em; }
+  .sec-label::before { content: "$ "; color: var(--accent); }
+
+  .art { max-width: 760px; margin: 0 auto; padding: 0 24px 40px; }
+  .art-head { max-width: 760px; margin: 0 auto; padding: 56px 24px 8px; }
+  .art-head .k { font-family: var(--mono); font-size: 11px; color: var(--accent); letter-spacing: 0.06em; }
+  .art-head h1 { font-size: clamp(1.8rem, 4vw, 2.7rem); line-height: 1.15; letter-spacing: -0.03em; font-weight: 500; margin: 12px 0 14px; }
+  .art-head h1 .grad { background: linear-gradient(102deg, #ffffff 8%, #a78bfa 52%, #22d3ee 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .art-head .sub { color: var(--text-2); font-size: 15px; }
+  .art-hr { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+  .art-hr hr { border: none; border-top: 1px solid var(--border); }
+
+  .art p { color: var(--text-2); font-size: 16px; line-height: 1.85; margin-bottom: 20px; }
+  .art strong { color: var(--text); font-weight: 600; }
+  .art em { color: var(--text-3); }
+  .art a { color: var(--accent-2); border-bottom: 1px solid rgba(34,211,238,0.3); }
+  .art a:hover { border-bottom-color: var(--accent-2); }
+  .art h2 { font-size: 22px; font-weight: 500; letter-spacing: -0.02em; color: var(--text); margin: 46px 0 18px; }
+  .art h3 { font-size: 17px; font-weight: 500; color: var(--text); margin: 32px 0 12px; }
+  .art ul, .art ol { color: var(--text-2); font-size: 16px; line-height: 1.8; margin: 0 0 20px 22px; }
+  .art li { margin-bottom: 8px; }
+  .art code { font-family: var(--mono); font-size: 13.5px; color: var(--text); background: var(--surface-2); border: 1px solid var(--border); padding: 1px 6px; border-radius: 4px; }
+  .art pre { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; overflow-x: auto; margin-bottom: 22px; }
+  .art pre code { background: none; border: none; padding: 0; font-size: 13px; color: var(--text-2); line-height: 1.7; }
+  .art blockquote { border-left: 2px solid var(--accent); background: rgba(124,92,255,0.06); padding: 14px 18px; border-radius: 0 8px 8px 0; margin-bottom: 22px; }
+  .art blockquote p { color: var(--text); margin-bottom: 10px; }
+  .art blockquote p:last-child { margin-bottom: 0; }
+  .art img { width: 100%; border: 1px solid var(--border); border-radius: 10px; margin: 8px 0 26px; background: var(--surface); }
+  .art hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+  .art table { width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 14.5px; }
+  .art th { text-align: left; color: var(--text-3); font-weight: 500; font-size: 13px; padding: 10px 12px; border-bottom: 1px solid var(--border-bright); }
+  .art td { color: var(--text-2); padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  .art td code, .art th code { font-size: 12.5px; }
+
+  .art-foot { max-width: 760px; margin: 0 auto; padding: 0 24px 90px; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .back { font-family: var(--mono); font-size: 13px; color: var(--text-2); border: 1px solid var(--border); padding: 9px 16px; border-radius: 8px; background: var(--surface); transition: all .18s; }
+  .back:hover { border-color: var(--border-bright); background: var(--surface-2); color: var(--text); }
+  .back .ps { color: var(--accent); }
+  .next-link { font-size: 14px; color: var(--text-2); }
+  .next-link:hover { color: var(--text); }
+  .foot-links { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+  @media (max-width: 640px) { .art-head { padding-top: 36px; } }
+
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap nav-inner">
+    <a class="brand" href="../index.html"><span class="dot"></span>云原生可观测 <span class="brand-path">~/observability/writing</span></a>
+    <div class="nav-links">
+      <a href="../index.html#evolution">演进线</a>
+      <a href="../index.html#writing">文章</a>
+      <a href="../index.html#projects">开源</a>
+      <a href="https://github.com/huangwenbang110-droid" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </div>
+</nav>
+
+<div class="art-head">
+  <div class="sec-label">cat ./writing/07.md</div>
+  <div class="k">07</div>
+  <h1><span class="grad">AIOps 探索</span></h1>
+  <p class="sub">第四代 · 用大模型处理运维数据（2026 – 至今）</p>
+</div>
+<div class="art-hr"><hr></div>
+
+<article class="art">
+<h2>一、先说清楚这一篇在写什么</h2>
+<p>第四代是两条线，这篇写其中一条。</p>
+<p>写之前先把两个容易混的东西分开：<strong>用 AI 观测</strong>和<strong>观测 AI</strong> 是两件不同的事。</p>
+<ul><li><strong>观测 AI</strong> 是把 LLM 应用本身当成被观测对象：轨迹、Token 成本、输出质量。被观测的是 AI，指标与链路是它的底座。（那是第 8 篇）</li><li><strong>用 AI 观测</strong>是把大模型用在运维过程里：处理的对象还是传统系统的指标、日志、链路、告警，大模型是手段。（就是这一篇）</li></ul>
+<p>被处理的数据没变，变的是谁在处理。</p>
+<hr>
+<h2>二、三个痛点</h2>
+<p>平台做了几年之后，问题不在"采不到数据"上。数据一直有，而且越来越多。真正难受的是另外三件事。</p>
+<p><strong>数据过载。</strong></p>
+<p>一个服务的调用链一次查询能拉出几万个 span。指标几百个维度。日志按 TB 算。</p>
+<p>数据量本身不是问题，问题是<strong>人工能看的量是固定的</strong>。一个值班的人一晚上能翻的告警、能点在几张图上，是有上限的。越过这条线之后，多出来的数据不产生任何价值，只是抬高噪音底噪。</p>
+<p><strong>告警噪音。</strong></p>
+<p>多条告警其实是同一个根因引发的。上游一个数据库连接池打满，下游几十个服务在同一个时间窗里一起报超时。</p>
+<p>值班的人看到的是一屏告警，实际上是一件事。但系统不知道这是同一件事 —— 它只会按规则一条条匹配、一条条发。</p>
+<p><strong>知识孤立。</strong></p>
+<p>排查需要的很多信息不在监控系统里：这次发布改了什么、这个接口是谁负责、上次同样的现象是怎么处理的、这个应用和那个应用之间有没有依赖。</p>
+<p>这些散在发布系统、工单、文档、聊天记录里。老员工脑子里有，新人只能一个个问。</p>
+<p>三件事的共同点：<strong>都不是"数据不够"的问题，是"数据需要被加工"的问题。</strong> 这也正是大模型能插进来的位置。</p>
+<hr>
+<h2>三、三个方向</h2>
+<p>对应上面三条，我们划了三个方向。</p>
+<table><thead><tr><th>方向</th><th>处理哪个痛点</th><th>做什么</th></tr></thead><tbody><tr><td>智能告警降噪</td><td>告警噪音</td><td>把同一时间窗、同一根因的告警合并收敛，只留一条</td></tr><tr><td>根因洞察</td><td>数据过载</td><td>从告警出发，自动查指标、日志、链路、拓扑，给出一份带证据的根因结论</td></tr><tr><td>自动化工作流</td><td>知识孤立</td><td>把"该查什么、按什么顺序查、怎么下结论"这套流程固化下来，新人也能跑</td></tr></tbody></table>
+<p>这三个方向不是并列的三件事。<strong>降噪是入口，根因是主体，工作流是把它变成可复用流程的方式。</strong></p>
+<hr>
+<h2>四、实现层：工具层为什么做成只读</h2>
+<h3>工具按信号分类</h3>
+<p>我们给大模型挂的是一层 MCP 工具，四十多个。按取数的信号分：</p>
+<ul><li>指标：按应用、按维度、按时间窗查时序</li><li>日志：按关键字、按时间窗、按应用检索</li><li>链路：按 trace id 查完整调用链，按耗时阈值筛慢链路</li><li>告警：查历史告警、查告警规则、查告警关联的服务</li><li>拓扑与依赖：查应用之间的调用关系、上下游</li><li>变更：查发布记录、配置变更记录</li></ul>
+<p>分类方式本身没什么特别，就是<strong>照着平台已有的查询接口拆</strong>。一个数据源一组工具，粒度对齐到"一次接口调用能回答的一个问题"。</p>
+<p>粒度不能太粗。"查这个应用的所有信息"这种工具看着省事，实际让模型没法分步推理，也没法在中间判断该往哪查。粒度也不能太细，太细之后一次诊断要调几十次工具，成本和时延都受不了。</p>
+<p><strong>四十多个是我们试出来的数量，不是设计出来的。</strong></p>
+<h3>全部只读，不给写权限</h3>
+<p>这是整个设计里最硬的一条决定。</p>
+<p>理由有四条：</p>
+<ol><li><strong>错的代价不对称。</strong> 查错了，最多是浪费一次查询、给一个错结论，人能看出来。写错了，是生产事故。这两种错误不该用同一套容错去兜。</li><li><strong>写权限要配套的东西还没做。</strong> 审批、回滚、幂等、审计、权限收敛 —— 少一样都不该开。这些没做完之前，写权限就是纯风险。</li><li><strong>工具数量就是权限面。</strong> 四十多个只读工具的风险面，等于四十多个已有查询接口。如果把工具换成写操作，风险面就不是线性增加的问题了。</li><li><strong>只读可以直接复用现有账号体系。</strong> 最小权限就是"只能调那几个查询接口"，不需要新造一套授权模型。</li></ol>
+<p>所以最后落下来的形态是：<strong>大模型能查遍平台所有数据，但改不了任何东西。</strong> 结论靠人看，动作靠人做。</p>
+<h3>工具只取原始数据，计算放在编排层</h3>
+<p>这条边界我们改过一次，值得单独写。</p>
+<p>一开始有几种工具是带业务逻辑的。比如"查某条告警前后一段时间的数据" —— 工具内部自己算时间窗，调用方只要传告警 id。</p>
+<p>后来发现这个设计有问题：</p>
+<ul><li>公式硬编码在工具里。告警时间窗的算法是 <code>起始 = 告警时间 − 统计周期 − 2 分钟</code>、<code>结束 = 告警时间 + 2 分钟</code>。这个公式后来要调，就得改工具、发版本。</li><li>编排层不知道工具内部怎么算的。诊断结论出错的时候，没法定位是公式错了还是模型推理错了。</li><li>换一个场景要类似的窗口，工具没法复用。</li></ul>
+<p><strong>改法：MCP 工具层只做原始数据查询，所有计算 —— 时间窗、比率、分位、环比 —— 全部移到编排层（我们用 Dify）。</strong></p>
+<p>编排层拿到原始数据、按脚本算、再交给模型。公式变成编排脚本里的一行，可读、可改、可追溯，改完不用发工具版本。</p>
+<p>代价是编排脚本会变长，且每个场景要写一遍。但换来的是<strong>中间过程可见</strong>。这个交换是值的。</p>
+<hr>
+<h2>五、实现层：编排</h2>
+<p>一次根因诊断的流程大概是这样：</p>
+<pre><code>告警进来
+  → 取告警内容与时间范围
+  → 编排层算时间窗
+  → 并发调工具：指标 / 日志 / 链路 / 拓扑 / 变更
+  → 汇总成结构化上下文
+  → 交给模型出结论
+  → 输出：根因判断 + 证据 + 建议动作</code></pre>
+<p>两个工程细节：</p>
+<p><strong>并发 + 超时 + 兜底。</strong> 一次诊断要同时查好几种信号，串行查就是几倍时延。我们用线程池并发，单个任务 5 秒超时、失败重试 3 次，整体 20 秒兜底。</p>
+<p>兜底这一层必须有。链路查询本身就要秒级，任何一个数据源卡住都会拖垮整次诊断。整体超时到了就先拿已有的数据出结论 —— <strong>给一份缺证据的结论，也比超时什么都不给强</strong>，因为人要的是方向。</p>
+<p><strong>上下文要压。</strong> 原始数据直接丢给模型会爆。指标要做成表格摘要、日志只留关键行、调用链只留异常路径。压缩在编排层做，让模型看到的是加工过的结构。</p>
+<hr>
+<h2>六、判断层：三条工程边界</h2>
+<p>大模型放进运维流程，卡住的地方不是"能不能调用"，是三条边界。</p>
+<h3>幻觉</h3>
+<p>模型会补出不存在的东西：不存在的时间段、不存在的指标名、看起来很像但没查过的数据。</p>
+<p>我们目前的处理：</p>
+<ul><li>工具返回结构化数据，编排层把它作为上下文的一部分给模型，模型只能基于已返回的内容说</li><li>输出要求带出处（哪条告警、哪个时间窗、哪个指标）</li><li>结论里区分"数据支持的"和"推测的"</li></ul>
+<p><strong>没有解决，只是把影响控制在能看出来的程度。</strong> 一个带出处的错结论，值班的人能核对；一个不带出处的错结论，只能选择信或不信。</p>
+<h3>成本</h3>
+<p>一次根因分析要调十几次工具、多轮模型调用。token 消耗比一次问答高一个量级。</p>
+<p>还在试的降本办法：限制轮次、缓存工具返回、先用小模型做筛选再上大模型。</p>
+<p>但成本没有降到位 —— 它现在还是"按需使用"的东西，不是"每条告警都自动跑一遍"的东西。这个差别很关键：<strong>只有成本降到可以无条件跑，降噪才可能真的自动。</strong></p>
+<h3>时延</h3>
+<p>链路查询本身就要秒级，加上多轮模型调用，一次诊断几十秒。</p>
+<p>值班场景下几十秒不算慢 —— 人工翻这么多数据要十几分钟。但如果要做成"告警进来、结论自动出来"，几十秒是能被接受的；如果要做成"每一步都实时看"，就不行。</p>
+<p>现在的取法是先给结论再补细节：几秒内出一句方向判断，剩下的证据随后补上。</p>
+<hr>
+<h2>七、还卡在哪</h2>
+<p><strong>评测集没有做出来。</strong></p>
+<p>这是最大的问题。没有评测集，就没有准确率、召回率，也就没法回答"这东西到底有没有用"。</p>
+<p>要做出评测集，需要一个标注过的样本库 —— 一批真实告警，每条标好真实根因。这个东西做起来很重：</p>
+<ul><li>标注要靠人，而且要靠熟悉系统的人</li><li>根因本身有时候有多个，标注口径要先统一</li><li>历史告警的根因要回溯，很多已经查不到了</li></ul>
+<p><strong>所以这一篇里没有任何准确率数字。</strong> 不是不愿意写，是现在没有可信的数据可写。宁可空着。</p>
+<p>其余三个卡点：</p>
+<ul><li><strong>成本还没低到可以默认全量跑。</strong> 现在是人触发或规则触发，不是每条告警都跑。</li><li><strong>写权限还没开。</strong> 上面写过原因，配套没做完。</li><li><strong>工具粒度和编排流程都在改。</strong> 四十多个工具的分组方式改过，编排脚本每个场景写一遍，还没抽象出通用模板。</li></ul>
+<hr>
+<h2>八、现在的状态</h2>
+<p>这一篇不打算给结论，因为它就是<strong>探索阶段</strong>的中间记录。</p>
+<p>已经确定的事：</p>
+<ul><li>方向是对的 —— 三个痛点都是真的，大模型确实能插进去</li><li>工具层做成只读是对的 —— 上线到现在没出过因为模型乱动导致的问题</li><li>计算放编排层是对的 —— 改公式不用发版本，这点在小步快跑的时候价值很大</li></ul>
+<p>还不确定的事：</p>
+<ul><li>效果能不能量化。没有评测集之前，所有"有用"都是印象</li><li>成本能降到什么程度，决定它是"辅助工具"还是"自动流程"</li><li>幻觉能不能压到可以无人值守的程度</li></ul>
+<p><strong>AI 在处理运维数据这块，工具链已经通了，工程边界还在摸索。</strong> 这篇先记到这里，后面有结论了再补。</p>
+<hr>
+<p><em>下一篇：AI 可观测落地 —— 被观测对象换成 LLM 应用本身，六个模块解决的是另一组问题。</em></p>
+</article>
+
+<div class="art-foot">
+  <a class="back" href="../index.html"><span class="ps">$</span> cd ~/observability</a>
+  <div class="foot-links"><a class="next-link" href="../index.html#writing">全部文章</a></div>
+</div>
+
+</body>
+</html>
