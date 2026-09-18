@@ -1,1 +1,1 @@
-index.html filter=stripids
+*.html filter=stripids

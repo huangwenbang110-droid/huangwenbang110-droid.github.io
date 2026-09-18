@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>平台、日志、指标 · 云原生可观测</title>
+<meta name="description" content="平台、日志、指标 —— 可观测演进笔记 01">
+<style>
+  :root {
+    --bg: #08090a; --surface: #0f1011; --surface-2: #141517;
+    --border: #1f2023; --border-bright: #2e3138;
+    --text: #f7f8f8; --text-2: #8a8f98; --text-3: #5c6169;
+    --accent: #7c5cff; --accent-2: #22d3ee; --green: #4ade80;
+    --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 16px; line-height: 1.65; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  a { color: inherit; text-decoration: none; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+  @keyframes blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+
+  nav { position: sticky; top: 0; z-index: 100; backdrop-filter: blur(12px); background: rgba(8,9,10,0.75); border-bottom: 1px solid var(--border); }
+  .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+  .brand { font-size: 15px; font-weight: 500; letter-spacing: -0.01em; display: flex; align-items: center; gap: 9px; }
+  .brand-path { font-family: var(--mono); font-size: 12px; color: var(--text-3); font-weight: 400; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+  .nav-links { display: flex; gap: 28px; font-size: 14px; color: var(--text-2); }
+  .nav-links a { transition: color .18s; }
+  .nav-links a:hover { color: var(--text); }
+  @media (max-width: 700px) { .nav-links { display: none; } .brand-path { display: none; } }
+
+  .sec-label { font-family: var(--mono); font-size: 12.5px; color: var(--text-3); letter-spacing: 0.02em; }
+  .sec-label::before { content: "$ "; color: var(--accent); }
+
+  .art { max-width: 760px; margin: 0 auto; padding: 0 24px 40px; }
+  .art-head { max-width: 760px; margin: 0 auto; padding: 56px 24px 8px; }
+  .art-head .k { font-family: var(--mono); font-size: 11px; color: var(--accent); letter-spacing: 0.06em; }
+  .art-head h1 { font-size: clamp(1.8rem, 4vw, 2.7rem); line-height: 1.15; letter-spacing: -0.03em; font-weight: 500; margin: 12px 0 14px; }
+  .art-head h1 .grad { background: linear-gradient(102deg, #ffffff 8%, #a78bfa 52%, #22d3ee 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .art-head .sub { color: var(--text-2); font-size: 15px; }
+  .art-hr { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+  .art-hr hr { border: none; border-top: 1px solid var(--border); }
+
+  .art p { color: var(--text-2); font-size: 16px; line-height: 1.85; margin-bottom: 20px; }
+  .art strong { color: var(--text); font-weight: 600; }
+  .art em { color: var(--text-3); }
+  .art a { color: var(--accent-2); border-bottom: 1px solid rgba(34,211,238,0.3); }
+  .art a:hover { border-bottom-color: var(--accent-2); }
+  .art h2 { font-size: 22px; font-weight: 500; letter-spacing: -0.02em; color: var(--text); margin: 46px 0 18px; }
+  .art h3 { font-size: 17px; font-weight: 500; color: var(--text); margin: 32px 0 12px; }
+  .art ul, .art ol { color: var(--text-2); font-size: 16px; line-height: 1.8; margin: 0 0 20px 22px; }
+  .art li { margin-bottom: 8px; }
+  .art code { font-family: var(--mono); font-size: 13.5px; color: var(--text); background: var(--surface-2); border: 1px solid var(--border); padding: 1px 6px; border-radius: 4px; }
+  .art pre { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; overflow-x: auto; margin-bottom: 22px; }
+  .art pre code { background: none; border: none; padding: 0; font-size: 13px; color: var(--text-2); line-height: 1.7; }
+  .art blockquote { border-left: 2px solid var(--accent); background: rgba(124,92,255,0.06); padding: 14px 18px; border-radius: 0 8px 8px 0; margin-bottom: 22px; }
+  .art blockquote p { color: var(--text); margin-bottom: 10px; }
+  .art blockquote p:last-child { margin-bottom: 0; }
+  .art img { width: 100%; border: 1px solid var(--border); border-radius: 10px; margin: 8px 0 26px; background: var(--surface); }
+  .art hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+  .art table { width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 14.5px; }
+  .art th { text-align: left; color: var(--text-3); font-weight: 500; font-size: 13px; padding: 10px 12px; border-bottom: 1px solid var(--border-bright); }
+  .art td { color: var(--text-2); padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  .art td code, .art th code { font-size: 12.5px; }
+
+  .art-foot { max-width: 760px; margin: 0 auto; padding: 0 24px 90px; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .back { font-family: var(--mono); font-size: 13px; color: var(--text-2); border: 1px solid var(--border); padding: 9px 16px; border-radius: 8px; background: var(--surface); transition: all .18s; }
+  .back:hover { border-color: var(--border-bright); background: var(--surface-2); color: var(--text); }
+  .back .ps { color: var(--accent); }
+  .next-link { font-size: 14px; color: var(--text-2); }
+  .next-link:hover { color: var(--text); }
+  @media (max-width: 640px) { .art-head { padding-top: 36px; } }
+
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap nav-inner">
+    <a class="brand" href="../index.html"><span class="dot"></span>云原生可观测 <span class="brand-path">~/observability/writing</span></a>
+    <div class="nav-links">
+      <a href="../index.html#evolution">演进线</a>
+      <a href="../index.html#writing">文章</a>
+      <a href="../index.html#projects">开源</a>
+      <a href="https://github.com/huangwenbang110-droid" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </div>
+</nav>
+
+<div class="art-head">
+  <div class="sec-label">cat ./writing/01.md</div>
+  <div class="k">01</div>
+  <h1><span class="grad">平台、日志、指标</span></h1>
+  <p class="sub">第一代监控平台回顾（2019–2020）</p>
+</div>
+<div class="art-hr"><hr></div>
+
+<article class="art">
+<h2>一、那时候我们以为，监控就是采集加告警</h2>
+<p>2019 年，我在写一个监控平台的第一个 SDK。</p>
+<p>我们对自己的定位非常明确：<strong>把数据采上来，出了问题能告警</strong>。</p>
+<p>数据只有两种——日志和指标。调用链？没在讨论范围内。不是评估后决定不做，是它根本没出现在需求里。</p>
+<p>平台的用户是一家券商。金融场景的约束和互联网公司不一样：数据不能出域，系统不能长时间不可用，变更窗口很小。这几条约束，决定了后面很多选择。</p>
+<p>团队 10 人左右。后端、SDK、前端，我都写。</p>
+<hr>
+<h2>二、整套架子长什么样</h2>
+<p><img src="../images/01-架构总览-dark.svg" alt="Octopus 第一代监控平台架构"></p>
+<p>先说一个容易被误解的地方。</p>
+<p><strong>这套系统的"自研"，指的是采集 SDK 和平台应用层。底层全部是开源组件</strong>——Kafka、ElasticSearch、OpenTSDB、HDFS、Grafana、Redis、MySQL。</p>
+<p>图上紫色是自研，灰色是开源。边界一目了然。</p>
+<p>所以真正的问题不是"为什么不用开源"，而是：<strong>为什么底层用开源，上层自己写？</strong></p>
+<p>道理不复杂。底层是通用能力，开源已经足够成熟；上层要跟自己的数据模型、告警规则、业务语义绑在一起，没有现成的东西能直接对上。</p>
+<hr>
+<h2>三、埋点：让业务方只改一行配置</h2>
+<h3>日志：继承 Appender</h3>
+<p>三种日志框架，log4j、logback、log4j2。</p>
+<p>它们有一个共同点：<strong>Appender</strong> —— 日志的输出目的地。框架本身就把这个位置留给了扩展。</p>
+<p>所以 Log SDK 的做法很直接：继承 Appender，拿到日志事件，组装成平台的数据格式，写进 Kafka。</p>
+<p>业务方不用改代码，只改一行日志配置。</p>
+<p>在当时这是最合适的做法：接入成本低，业务方不用学新东西，而这个扩展点本来就是为这种场景设计的。</p>
+<h3>指标：两条路</h3>
+<p><strong>第一条，JVM 和系统指标。</strong></p>
+<p>JVM 相关的（堆、GC、线程）从 JDK 自带的方法取。主机系统信息，用 OSHI 采集。</p>
+<p>这里有个实际教训。</p>
+<blockquote><p>OSHI 是跨平台系统信息采集库，一行代码就能拿到 CPU、内存、磁盘、网络。但它的开销比预期大得多——<strong>最高的时候能把 CPU 打到 100%</strong>。</p>
+<p>被监控的应用，先被监控组件自己拖垮了。</p></blockquote>
+<p>后来我们对这块做了限制：降低采集频率、加缓存、只保留必要的字段。</p>
+<p><strong>第二条，业务指标。</strong></p>
+<p>平台提供一套 Java API，业务方在代码里主动写指标。SDK 在本地攒着，<strong>每 3 秒批量提交到 Kafka</strong>。</p>
+<p>3 秒是权衡的结果。更短，网络和 Kafka 压力大；更长，告警延迟明显。</p>
+<hr>
+<h2>四、同一份数据，存两个数据库</h2>
+<p>指标同时写 ElasticSearch 和 OpenTSDB，查询的时候两个都查。</p>
+<p>为什么两个都要？</p>
+<p><strong>不是为了功能互补，是为了容错。</strong> ES 出问题可以从 TSDB 查，TSDB 出问题可以从 ES 查。</p>
+<p>这个理由现在听起来有点朴素，但它反映的是当时真实的约束：<strong>平台上线之后必须随时能查，不允许一个存储挂掉就彻底失能。</strong></p>
+<p>代价也很直接：</p>
+<ul><li>双倍的写入压力和存储成本</li><li>两个库的查询语法、聚合能力、数据模型都不一样，查询层要抹平差异</li><li>两边数据对不上时，以谁为准？这是运维上长期的麻烦</li></ul>
+<p>用冗余换可用性，这个选择没错。但它把复杂度永久地留在了系统里。</p>
+<hr>
+<h2>五、从日志里榨指标</h2>
+<p>这是整套架构里最值得说的地方。</p>
+<p><img src="../images/01-日志转指标链路-dark.svg" alt="日志转指标的数据链路"></p>
+<p><strong>同一条数据，在 Kafka 里走了两遍。</strong></p>
+<p>原因很现实：日志里承载了关键业务数据。当时指标采集能力不足，很多业务关心的数值是从日志里打出来的。所以平台从日志中提取字段，转成指标，再走指标的链路存下来。</p>
+<p>在 2020 年，这个做法是合理的——它用最小的改造成本，把已经存在的日志数据变成了可聚合的指标。</p>
+<p>代价在几年后才显现：</p>
+<ul><li><strong>链路长</strong>：日志延迟直接影响指标延迟</li><li><strong>成本翻倍</strong>：同一条数据在 Kafka 里走两遍，处理资源也是两遍</li><li><strong>口径混乱</strong>：一个数值既有日志版本又指标版本，排查问题时以哪个为准</li><li><strong>强耦合</strong>：日志格式一改，指标提取规则就得跟着改</li></ul>
+<p>这是一个典型的<strong>临时方案演变成长期负担</strong>的案例。</p>
+<p>后来 OpenTelemetry 把指标、日志、链路定义成三种独立信号，各有各的采集与传输路径——解决的正是这类问题。但在 2020 年，我们还没有这个视角。</p>
+<hr>
+<h2>六、那个不在场的东西</h2>
+<p>回到最开始的问题：为什么没有调用链？</p>
+<p><strong>因为没意识到它重要。</strong></p>
+<p>当时的注意力全在"把数据采上来"这件事上。光采集就有大量工作：SDK 要适配各种框架、要压性能开销、要保证不丢数据、要处理五花八门的环境和网络问题。</p>
+<p>更关键的是：<strong>当时没有一种问题，逼着我们要调用链。</strong></p>
+<p>日志能回答"发生了什么"，指标能回答"整体趋势如何"。在业务规模还没起来、调用关系还不复杂的阶段，这两个够用了。</p>
+<p>调用链要回答的是第三种问题：</p>
+<blockquote><p>这一个请求，慢在哪一步？</p></blockquote>
+<p>2020 年，这个问题还没频繁到非解决不可。</p>
+<hr>
+<h2>七、答不上来的问题</h2>
+<p>如果问我什么时候开始意识到调用链重要——</p>
+<p><strong>没有那个时刻。</strong></p>
+<p>当时很懵懂。真实的过程是：业务方的问题，越来越答不上来。</p>
+<ul><li>"这个接口为什么慢？" —— 指标能看到它慢，看不到慢在哪一环</li><li>"这次故障影响了哪些业务？" —— 日志能查到报错，串不起完整的调用路径</li><li>"是不是下游拖慢了上游？" —— 没有跨服务的上下文，只能靠猜</li></ul>
+<p><strong>日志和指标回答不了这类问题。</strong></p>
+<p>于是开始做评估。这是我第一次真正系统地看开源方案——之前做监控平台的时候，压根没做过方案评估，自研是默认路径。</p>
+<p>评估的结果，是引入 APM 和调用链能力。现在回头看这一步不复杂，但在当时，"技术需要升级了"这个判断本身就是一次认知上的突破：<strong>承认现有方案有结构性缺陷，而不只是功能不够。</strong></p>
+<hr>
+<h2>八、后来</h2>
+<p>当时没觉得这套架构有什么问题。</p>
+<p>上线之后主要的工作是加采集项、调告警阈值、处理业务方的接入问题。平台一直跑着，双机房也没出过要切流的大事故。</p>
+<p>问题是在后面几年才显出来的。</p>
+<p>调用链是最大的缺失。补的时候不只是加一个模块——数据模型要重新设计，SDK 要加新的埋点能力，存储要换，查询层要重写。原来日志和指标那一套，基本用不上。</p>
+<p>日志转指标那条链路后来一直在维护。新的日志格式出来，提取规则就要跟着改。这些年它一直在跑，也一直在改。</p>
+<p>ES 和 OpenTSDB 双写保留着，两边数据偶尔对不上，需要人工核对。</p>
+<p>有三样东西留了下来，后面几代产品还在用：Log SDK 用 Appender 扩展点接入的思路、3 秒批量上报的节奏、本地缓冲和采样的机制。</p>
+<p>关于自研这件事，当时没觉得它是个需要讨论的问题。业务方要什么，我们就写什么。技术选型这四个字，是到做下一代的时候才开始认真对待的。</p>
+<hr>
+<p><em>下一篇：第二代——APM 与调用链，第一次认真做技术评估，以及补上调用链的代价。</em></p>
+</article>
+
+<div class="art-foot">
+  <a class="back" href="../index.html"><span class="ps">$</span> cd ~/observability</a>
+  
+</div>
+
+</body>
+</html>
