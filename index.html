@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>云原生可观测 · 从自研 SDK 到 AI 可观测</title>
-<meta name="description" content="七年走过可观测四代演进：自研 SDK、Agent 架构、OpenTelemetry 统一、AIOps 与 AI 可观测。">
+<meta name="description" content="七年走过可观测体系四代演进：自研 SDK、Agent 架构、OpenTelemetry 统一、AIOps 与 AI 可观测。">
 <style>
   :root {
     --bg: #08090a;
@@ -17,6 +17,7 @@
     --text-3: #5c6169;
     --accent: #7c5cff;
     --accent-2: #22d3ee;
+    --green: #4ade80;
     --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
     --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
   }
@@ -34,6 +35,8 @@
   a { color: inherit; text-decoration: none; }
   .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
 
+  @keyframes blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+
   /* nav */
   nav {
     position: sticky; top: 0; z-index: 100;
@@ -43,14 +46,15 @@
   }
   .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 60px; }
   .brand { font-size: 15px; font-weight: 500; letter-spacing: -0.01em; display: flex; align-items: center; gap: 9px; }
+  .brand-path { font-family: var(--mono); font-size: 12px; color: var(--text-3); font-weight: 400; }
   .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); }
   .nav-links { display: flex; gap: 28px; font-size: 14px; color: var(--text-2); }
   .nav-links a { transition: color .18s; }
   .nav-links a:hover { color: var(--text); }
-  @media (max-width: 700px) { .nav-links { display: none; } }
+  @media (max-width: 700px) { .nav-links { display: none; } .brand-path { display: none; } }
 
   /* hero */
-  header { padding: 120px 0 90px; position: relative; }
+  header { padding: 116px 0 88px; position: relative; }
   header::before {
     content: ""; position: absolute; top: -120px; left: 50%; transform: translateX(-50%);
     width: 900px; height: 520px; pointer-events: none;
@@ -73,6 +77,12 @@
     background: linear-gradient(102deg, #ffffff 8%, #a78bfa 52%, #22d3ee 100%);
     -webkit-background-clip: text; background-clip: text; color: transparent;
   }
+  .caret {
+    display: inline-block; width: 3px; height: 0.78em; margin-left: 10px;
+    background: var(--accent); vertical-align: -0.04em;
+    box-shadow: 0 0 12px rgba(124,92,255,0.85);
+    animation: blink 1.1s steps(1) infinite;
+  }
   .lede { font-size: 17px; color: var(--text-2); max-width: 620px; margin-bottom: 38px; }
   .actions { display: flex; gap: 12px; flex-wrap: wrap; }
   .btn {
@@ -86,11 +96,12 @@
   .btn.primary:hover { background: #dedfe2; border-color: #dedfe2; }
 
   section { padding: 78px 0; border-top: 1px solid var(--border); }
-  .sec-head { margin-bottom: 44px; }
+  .sec-head { margin-bottom: 40px; }
   .sec-label {
-    font-family: var(--mono); font-size: 12px; color: var(--accent);
-    letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 14px;
+    font-family: var(--mono); font-size: 12.5px; color: var(--text-3);
+    letter-spacing: 0.02em; margin-bottom: 14px;
   }
+  .sec-label::before { content: "$ "; color: var(--accent); }
   h2 { font-size: clamp(1.5rem, 2.6vw, 2rem); font-weight: 500; letter-spacing: -0.025em; margin-bottom: 12px; }
   .sec-sub { color: var(--text-2); font-size: 15px; max-width: 640px; }
 
@@ -101,24 +112,70 @@
   .metric .l { font-size: 13px; color: var(--text-3); }
   @media (max-width: 700px) { .metrics { grid-template-columns: 1fr; } }
 
-  /* timeline */
-  .tl { position: relative; padding-left: 30px; }
-  .tl::before {
-    content: ""; position: absolute; left: 5px; top: 8px; bottom: 8px; width: 1px;
-    background: linear-gradient(to bottom, var(--accent), var(--accent-2), transparent);
-    opacity: .45;
+  /* terminal window */
+  .term {
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
+    background: var(--surface);
+    box-shadow: 0 30px 70px -40px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.012) inset;
   }
-  .tl-item { position: relative; padding-bottom: 34px; }
-  .tl-item:last-child { padding-bottom: 0; }
-  .tl-item::before {
-    content: ""; position: absolute; left: -30px; top: 8px;
-    width: 11px; height: 11px; border-radius: 50%;
-    background: var(--bg); border: 1.5px solid var(--accent);
-    box-shadow: 0 0 12px rgba(124,92,255,0.55);
+  .term-bar {
+    display: flex; align-items: center; gap: 12px;
+    height: 42px; padding: 0 16px;
+    background: var(--surface-2); border-bottom: 1px solid var(--border);
   }
-  .tl-phase { font-family: var(--mono); font-size: 11px; color: var(--text-3); letter-spacing: 0.08em; }
-  .tl-title { font-size: 17px; font-weight: 500; margin: 5px 0 7px; letter-spacing: -0.01em; }
-  .tl-desc { font-size: 14.5px; color: var(--text-2); max-width: 660px; }
+  .dots { display: flex; gap: 6px; }
+  .dots i { display: block; width: 10px; height: 10px; border-radius: 50%; }
+  .dots i:nth-child(1) { background: #ff5f57; }
+  .dots i:nth-child(2) { background: #febc2e; }
+  .dots i:nth-child(3) { background: #28c840; }
+  .term-title { flex: 1; text-align: center; font-family: var(--mono); font-size: 12px; color: var(--text-3); }
+  .term-spacer { width: 42px; }
+
+  .term-body {
+    padding: 8px 0 4px;
+    background:
+      radial-gradient(620px 130px at 18% 0%, rgba(124,92,255,0.075), transparent 70%),
+      var(--surface);
+  }
+
+  /* tree */
+  .node { position: relative; padding: 16px 26px; transition: background .2s; }
+  .node:hover { background: rgba(255,255,255,0.018); }
+  .node-head { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; flex-wrap: wrap; }
+  .path {
+    font-family: var(--mono); font-size: 12px; color: var(--accent);
+    background: rgba(124,92,255,0.10); border: 1px solid rgba(124,92,255,0.24);
+    padding: 2px 9px; border-radius: 5px;
+    transition: all .2s;
+  }
+  .node:hover .path { background: rgba(124,92,255,0.18); border-color: rgba(124,92,255,0.45); box-shadow: 0 0 14px -2px rgba(124,92,255,0.5); }
+  .meta { font-family: var(--mono); font-size: 11px; color: var(--text-3); letter-spacing: 0.08em; }
+  .node-title { font-size: 17px; font-weight: 500; letter-spacing: -0.012em; margin-bottom: 6px; }
+  .node-desc { font-size: 14.5px; color: var(--text-2); max-width: 700px; }
+  .node-desc code {
+    font-family: var(--mono); font-size: 13px; color: var(--text);
+    background: var(--bg); border: 1px solid var(--border);
+    padding: 1px 6px; border-radius: 4px;
+  }
+
+  .children { margin-top: 16px; padding-left: 30px; border-left: 1px solid var(--border-bright); }
+  .children > .node { padding-left: 26px; }
+  .children > .node::before {
+    content: ""; position: absolute; left: -30px; top: 26px;
+    width: 22px; height: 1px; background: var(--border-bright);
+  }
+  .children > .node:first-child { padding-top: 10px; }
+  .children > .node:first-child::before { top: 20px; }
+  .children > .node:last-child { padding-bottom: 4px; }
+  @media (max-width: 640px) { .children { padding-left: 18px; } .children > .node { padding-left: 16px; } .children > .node::before { left: -18px; width: 12px; } }
+
+  .term-foot {
+    display: flex; align-items: center; gap: 9px;
+    padding: 12px 26px 16px; font-family: var(--mono); font-size: 13px; color: var(--text-3);
+    border-top: 1px solid var(--border);
+  }
+  .ps { color: var(--accent); }
+  .cursor { display: block; width: 8px; height: 15px; background: var(--accent); opacity: .85; animation: blink 1.1s steps(1) infinite; }
 
   /* cards */
   .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
@@ -132,7 +189,7 @@
   .card h3 { font-size: 15.5px; font-weight: 500; margin-bottom: 8px; line-height: 1.45; letter-spacing: -0.005em; }
   .card p { font-size: 13.5px; color: var(--text-3); line-height: 1.6; }
   .card .status { display: inline-block; margin-top: 14px; font-size: 11.5px; font-family: var(--mono); color: var(--text-3); border: 1px solid var(--border); padding: 2px 9px; border-radius: 5px; }
-  .card .status.done { color: #4ade80; border-color: rgba(74,222,128,0.28); }
+  .card .status.done { color: var(--green); border-color: rgba(74,222,128,0.28); }
   .card .status.wip { color: #fbbf24; border-color: rgba(251,191,36,0.28); }
 
   /* project */
@@ -140,7 +197,8 @@
   .proj:hover { border-color: var(--border-bright); }
   .proj-top { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
   .proj-name { font-family: var(--mono); font-size: 15px; color: var(--text); }
-  .proj-desc { color: var(--text-2); font-size: 14.5px; margin-bottom: 20px; max-width: 660px; }
+  .proj-name::before { content: "$ "; color: var(--accent); }
+  .proj-desc { color: var(--text-2); font-size: 14.5px; margin-bottom: 20px; max-width: 680px; }
   .tags { display: flex; gap: 8px; flex-wrap: wrap; }
   .tag { font-size: 11.5px; font-family: var(--mono); color: var(--text-2); border: 1px solid var(--border); padding: 3px 10px; border-radius: 5px; background: var(--bg); }
 
@@ -150,14 +208,14 @@
 
   .reveal { opacity: 0; transform: translateY(18px); transition: opacity .7s cubic-bezier(.16,1,.3,1), transform .7s cubic-bezier(.16,1,.3,1); }
   .reveal.in { opacity: 1; transform: none; }
-  @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } }
+  @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } .caret, .cursor { animation: none; } }
 </style>
 </head>
 <body>
 
 <nav>
   <div class="wrap nav-inner">
-    <div class="brand"><span class="dot"></span>云原生可观测</div>
+    <div class="brand"><span class="dot"></span>云原生可观测 <span class="brand-path">~/observability</span></div>
     <div class="nav-links">
       <a href="#evolution">演进线</a>
       <a href="#writing">文章</a>
@@ -170,7 +228,7 @@
 <header>
   <div class="wrap">
     <div class="chip"><span>·</span> 2019 — 至今 · 四代演进</div>
-    <h1>从自研 SDK 到<br><span class="grad">AI 可观测</span></h1>
+    <h1>从自研 SDK 到<br><span class="grad">AI 可观测</span><span class="caret"></span></h1>
     <p class="lede">
       七年间完整走过可观测体系的四代演进：自研 SDK、Agent 架构、OpenTelemetry 统一、AIOps 与 AI 可观测。
       在数百应用、数千业务单元、数万节点的规模上做过完整落地。
@@ -191,36 +249,65 @@
 <section id="evolution">
   <div class="wrap">
     <div class="sec-head reveal">
-      <div class="sec-label">Evolution</div>
+      <div class="sec-label">tree -L 3 ./observability</div>
       <h2>演进线</h2>
       <p class="sec-sub">每一代都不是平滑升级，中间有代价和取舍。文章里写的正是这些。</p>
     </div>
-    <div class="tl">
-      <div class="tl-item reveal">
-        <div class="tl-phase">PHASE 01</div>
-        <div class="tl-title">Octopus · 第一代监控平台</div>
-        <div class="tl-desc">自研采集 SDK 与平台应用层，覆盖日志与指标。底层用开源组件，上层自研。当时没有调用链——不是放弃，是没进视野。</div>
+
+    <div class="term reveal">
+      <div class="term-bar">
+        <span class="dots"><i></i><i></i><i></i></span>
+        <span class="term-title">~/observability/trace</span>
+        <span class="term-spacer"></span>
       </div>
-      <div class="tl-item reveal">
-        <div class="tl-phase">PHASE 02</div>
-        <div class="tl-title">APM · 应用性能监控</div>
-        <div class="tl-desc">业务方开始问"这个请求慢在哪一步"，日志和指标答不上来。第一次认真做技术评估，引入调用链。</div>
+      <div class="term-body">
+
+        <div class="node">
+          <div class="node-head"><code class="path">0</code><span class="meta">第一代 · 自研 SDK</span></div>
+          <div class="node-title">Octopus · 监控平台</div>
+          <div class="node-desc">自研采集 SDK 与平台应用层，覆盖日志与指标。底层用开源组件，上层自研。当时没有调用链——不是放弃，是没进视野。</div>
+
+          <div class="children">
+
+            <div class="node">
+              <div class="node-head"><code class="path">0.0</code><span class="meta">第二代 · APM</span></div>
+              <div class="node-title">应用性能监控</div>
+              <div class="node-desc">业务方开始问"这个请求慢在哪一步"，日志和指标答不上来。第一次认真做技术评估，引入调用链。</div>
+
+              <div class="children">
+                <div class="node">
+                  <div class="node-head"><code class="path">0.0.0</code><span class="meta">调用链定位方式</span></div>
+                  <div class="node-title">路径式编号，不是父子嵌套</div>
+                  <div class="node-desc">自研探针的调用链是树形，用 <code>0</code> / <code>0.0</code> / <code>0.0.0</code> / <code>0.0.1</code> 这类路径编号标识节点在链路中的位置：同级往后顺延，下钻继续往后接。<br>好处是任意节点能直接靠编号定位自己在链路里的坐标，不依赖上游传递的 parentSpanId。</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="node">
+              <div class="node-head"><code class="path">0.1</code><span class="meta">第三代 · 云原生</span></div>
+              <div class="node-title">云原生应用可观测</div>
+              <div class="node-desc">指标、日志、调用链三信号统一，容器化与 Kubernetes 环境适配，平台规模上量。</div>
+
+              <div class="children">
+                <div class="node">
+                  <div class="node-head"><code class="path">0.1.0</code><span class="meta">协议与语义迁移</span></div>
+                  <div class="node-title">OpenTelemetry 统一</div>
+                  <div class="node-desc">存量兼容、协议转换、团队认知重建。从路径式编号迁到标准父子结构，是这一代最值得记录的代价。</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="node">
+              <div class="node-head"><code class="path">0.2</code><span class="meta">第四代 · AI</span></div>
+              <div class="node-title">AIOps 与 AI 可观测</div>
+              <div class="node-desc">大模型做告警根因分析，只读 MCP 工具边界设计；AI 应用的 Token 成本治理与内容脱敏。</div>
+            </div>
+
+          </div>
+        </div>
+
       </div>
-      <div class="tl-item reveal">
-        <div class="tl-phase">PHASE 03</div>
-        <div class="tl-title">云原生应用可观测</div>
-        <div class="tl-desc">指标、日志、调用链三信号统一，容器化与 Kubernetes 环境适配，平台规模上量。</div>
-      </div>
-      <div class="tl-item reveal">
-        <div class="tl-phase">PHASE 04</div>
-        <div class="tl-title">OpenTelemetry 统一</div>
-        <div class="tl-desc">协议与语义迁移，存量兼容。迁移的代价是这一代最值得记录的部分。</div>
-      </div>
-      <div class="tl-item reveal">
-        <div class="tl-phase">PHASE 05</div>
-        <div class="tl-title">AIOps 与 AI 可观测</div>
-        <div class="tl-desc">大模型做告警根因分析，只读 MCP 工具边界设计；AI 应用的 Token 成本治理与内容脱敏。</div>
-      </div>
+      <div class="term-foot"><span class="ps">$</span><span class="cursor"></span></div>
     </div>
   </div>
 </section>
@@ -228,7 +315,7 @@
 <section id="writing">
   <div class="wrap">
     <div class="sec-head reveal">
-      <div class="sec-label">Writing</div>
+      <div class="sec-label">ls -la ./writing</div>
       <h2>可观测演进笔记</h2>
       <p class="sec-sub">写"为什么要换下一代"，不写"这一代怎么实现"。实现细节别人能学，转移动机与代价只有走过的人知道。</p>
     </div>
@@ -288,7 +375,7 @@
 <section id="projects">
   <div class="wrap">
     <div class="sec-head reveal">
-      <div class="sec-label">Open source</div>
+      <div class="sec-label">gh repo view ai-observability-guard</div>
       <h2>开源项目</h2>
       <p class="sec-sub">文章讲"为什么"，项目证明"做得出"。</p>
     </div>
